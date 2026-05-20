@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+/* ─── Clase dark via next-themes (attribute="class") ─── */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── Variables de tema ─── */
+:root {
+  /* Fondos */
+  --bg-page: #FAF9F8;
+  --bg-card: #FFFFFF;
+  --bg-highlight: #FBEAF0;
+  --bg-alt: #F2F0EF;
+
+  /* Texto */
+  --fg-primary: #2D2D2D;
+  --fg-secondary: #6B6B6B;
+  --fg-tertiary: #9E9E9E;
+
+  /* Bordes */
+  --border-soft: #EBEBEB;
+  --border-medium: #D6D6D6;
+
+  /* Acentos (cambian en dark mode) */
+  --accent-rose: #D4537E;
+  --accent-gold: #B8860B;
+}
+
+.dark {
+  --bg-page: #1A1118;
+  --bg-card: #241820;
+  --bg-highlight: #2E1A24;
+  --bg-alt: #2E1A24;
+
+  --fg-primary: #F5EEF2;
+  --fg-secondary: #C8AABB;
+  --fg-tertiary: #7A6470;
+
+  --border-soft: #3D2535;
+  --border-medium: #3D2535;
+
+  --accent-rose: #E8709A;
+  --accent-gold: #D4A017;
+}
+
+/* ─── Tokens de Tailwind v4 ─── */
+@theme inline {
+  /* Fondos tema-aware */
+  --color-page: var(--bg-page);
+  --color-card: var(--bg-card);
+  --color-highlight: var(--bg-highlight);
+  --color-alt: var(--bg-alt);
+
+  /* Texto tema-aware */
+  --color-fg: var(--fg-primary);
+  --color-fg-2: var(--fg-secondary);
+  --color-fg-3: var(--fg-tertiary);
+
+  /* Bordes tema-aware */
+  --color-rim: var(--border-soft);
+  --color-rim-2: var(--border-medium);
+
+  /* Acentos tema-aware */
+  --color-accent: var(--accent-rose);
+  --color-accent-gold: var(--accent-gold);
+
+  /* Marca estática (no cambian con el tema) */
+  --color-rose: #D4537E;
+  --color-rose-dark: #993556;
+  --color-rose-light: #FBEAF0;
+  --color-rose-medium: #ED93B1;
+  --color-rose-bright: #E8709A;
+  --color-nude: #F8EBE8;
+  --color-gold: #B8860B;
+  --color-gold-bright: #D4A017;
+  --color-gold-light: #FFF8E1;
+
+  /* Estados */
+  --color-success: #1D9E75;
+  --color-warning: #E65100;
+  --color-error: #C62828;
+  --color-info: #185FA5;
+
+  /* Tipografía */
+  --font-display: var(--font-playfair), serif;
+  --font-body: var(--font-inter), sans-serif;
+}
+
+/* ─── Base ─── */
+body {
+  background-color: var(--bg-page);
+  color: var(--fg-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}

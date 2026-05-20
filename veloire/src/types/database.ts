@@ -1,0 +1,66 @@
+export type Json = string | number | boolean | null | { [key: string]: Json } | Json[]
+
+export type ProductStatus = 'draft' | 'active' | 'inactive'
+export type OrderStatus = 'pending_payment' | 'paid' | 'preparing' | 'shipped' | 'delivered' | 'cancelled'
+export type UserRole = 'customer' | 'admin'
+export type NotificationType = 'order_confirmation' | 'payment_confirmed' | 'order_shipped' | 'order_delivered'
+export type NotificationStatus = 'pending' | 'sent' | 'failed'
+
+export interface Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: { id: string; full_name: string | null; email: string; phone: string | null; role: UserRole; avatar_url: string | null; created_at: string; updated_at: string }
+        Insert: { id: string; email: string; full_name?: string | null; phone?: string | null; role?: UserRole; avatar_url?: string | null }
+        Update: { full_name?: string | null; phone?: string | null; avatar_url?: string | null }
+      }
+      categories: {
+        Row: { id: string; name: string; slug: string; description: string | null; image_url: string | null; is_active: boolean; sort_order: number; created_at: string }
+        Insert: { name: string; slug: string; description?: string | null; image_url?: string | null; is_active?: boolean; sort_order?: number }
+        Update: { name?: string; slug?: string; description?: string | null; image_url?: string | null; is_active?: boolean; sort_order?: number }
+      }
+      products: {
+        Row: { id: string; category_id: string; name: string; slug: string; description: string | null; price: number; compare_price: number | null; status: ProductStatus; is_featured: boolean; meta_title: string | null; meta_description: string | null; created_at: string; updated_at: string }
+        Insert: { category_id: string; name: string; slug: string; price: number; description?: string | null; compare_price?: number | null; status?: ProductStatus; is_featured?: boolean }
+        Update: { category_id?: string; name?: string; slug?: string; price?: number; description?: string | null; compare_price?: number | null; status?: ProductStatus; is_featured?: boolean }
+      }
+      product_images: {
+        Row: { id: string; product_id: string; url: string; alt_text: string | null; is_main: boolean; sort_order: number; created_at: string }
+        Insert: { product_id: string; url: string; alt_text?: string | null; is_main?: boolean; sort_order?: number }
+        Update: { url?: string; alt_text?: string | null; is_main?: boolean; sort_order?: number }
+      }
+      product_shades: {
+        Row: { id: string; product_id: string; name: string; hex_color: string; image_url: string | null; stock: number; is_active: boolean; sort_order: number; created_at: string; updated_at: string }
+        Insert: { product_id: string; name: string; hex_color: string; image_url?: string | null; stock?: number; is_active?: boolean; sort_order?: number }
+        Update: { name?: string; hex_color?: string; image_url?: string | null; stock?: number; is_active?: boolean; sort_order?: number }
+      }
+      orders: {
+        Row: { id: string; user_id: string | null; order_number: string; status: OrderStatus; customer_name: string; customer_email: string; customer_phone: string; address: string; neighborhood: string; city: string; department: string; notes: string | null; subtotal: number; delivery_fee: number; total: number; payment_method: string; payment_confirmed_at: string | null; payment_confirmed_by: string | null; created_at: string; updated_at: string }
+        Insert: { user_id?: string | null; order_number: string; customer_name: string; customer_email: string; customer_phone: string; address: string; neighborhood: string; subtotal: number; delivery_fee: number; total: number; notes?: string | null }
+        Update: { status?: OrderStatus; payment_confirmed_at?: string | null; payment_confirmed_by?: string | null }
+      }
+      order_items: {
+        Row: { id: string; order_id: string; product_id: string | null; shade_id: string | null; product_name: string; shade_name: string; shade_hex: string; image_url: string | null; quantity: number; unit_price: number; subtotal: number; created_at: string }
+        Insert: { order_id: string; product_id?: string | null; shade_id?: string | null; product_name: string; shade_name: string; shade_hex: string; image_url?: string | null; quantity: number; unit_price: number; subtotal: number }
+        Update: never
+      }
+      store_config: {
+        Row: { key: string; value: string; description: string | null; updated_at: string }
+        Insert: { key: string; value: string; description?: string | null }
+        Update: { value?: string; description?: string | null }
+      }
+    }
+    Views: {
+      v_inventory_summary: {
+        Row: { product_id: string; product_name: string; category_name: string | null; status: ProductStatus; total_shades: number; total_stock: number; out_of_stock_shades: number; low_stock_shades: number; min_shade_stock: number }
+      }
+      v_orders_detail: {
+        Row: { id: string; order_number: string; status: OrderStatus; customer_name: string; customer_email: string; customer_phone: string; full_address: string; subtotal: number; delivery_fee: number; total: number; payment_method: string; payment_confirmed_at: string | null; created_at: string; notes: string | null; item_count: number; total_units: number }
+      }
+    }
+    Functions: {
+      generate_order_number: { Args: Record<string, never>; Returns: string }
+      is_admin: { Args: Record<string, never>; Returns: boolean }
+    }
+  }
+}
