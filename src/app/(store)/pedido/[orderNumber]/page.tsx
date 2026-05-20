@@ -9,12 +9,12 @@ interface PageProps {
 async function getWhatsapp(): Promise<string | null> {
   try {
     const supabase = await createClient()
-    const { data } = await supabase
+    const { data: rows } = await supabase
       .from('store_config')
       .select('value')
       .eq('key', 'whatsapp_number')
-      .single()
-    return data?.value ?? null
+      .limit(1)
+    return (rows as Array<{ value: string }> | null)?.[0]?.value ?? null
   } catch {
     return null
   }

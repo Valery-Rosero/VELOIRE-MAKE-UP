@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { Instagram } from 'lucide-react'
 
 interface FooterProps {
   instagramUrl?: string
@@ -61,7 +60,11 @@ export function Footer({ instagramUrl, whatsappNumber }: FooterProps) {
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-sm text-fg-2 hover:text-accent transition-colors duration-150"
                 >
-                  <Instagram size={16} />
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                    <circle cx="12" cy="12" r="4.5" />
+                    <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
+                  </svg>
                   Instagram
                 </a>
               )}

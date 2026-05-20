@@ -14,17 +14,16 @@ const NAV_LINKS = [
 ]
 
 function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-  if (!mounted) return <div className="w-9 h-9" />
+  const { resolvedTheme, setTheme } = useTheme()
+
   return (
     <button
-      aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+      aria-label="Cambiar tema"
       className="w-9 h-9 flex items-center justify-center rounded-lg text-fg-2 hover:text-accent hover:bg-highlight transition-colors duration-150"
     >
-      {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+      <Moon size={18} className="dark:hidden" />
+      <Sun size={18} className="hidden dark:block" />
     </button>
   )
 }

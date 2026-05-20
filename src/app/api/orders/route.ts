@@ -40,32 +40,36 @@ export async function POST(request: NextRequest) {
     const orderNumber: string = orderNumberData
 
     // Crear el pedido
-    const { data: order, error: orderError } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const orderInsert: any = {
+      order_number: orderNumber,
+      customer_name: data.customer_name,
+      customer_email: data.customer_email,
+      customer_phone: data.customer_phone,
+      address: data.address,
+      neighborhood: data.neighborhood,
+      city: data.city,
+      department: data.department,
+      notes: data.notes ?? null,
+      payment_method: data.payment_method,
+      subtotal,
+      delivery_fee,
+      total: totalAmount,
+      status: 'pending_payment',
+    }
+    const { data: orderRows, error: orderError } = await supabase
       .from('orders')
-      .insert({
-        order_number: orderNumber,
-        customer_name: data.customer_name,
-        customer_email: data.customer_email,
-        customer_phone: data.customer_phone,
-        address: data.address,
-        neighborhood: data.neighborhood,
-        city: data.city,
-        department: data.department,
-        notes: data.notes ?? null,
-        payment_method: data.payment_method,
-        subtotal,
-        delivery_fee,
-        total: totalAmount,
-        status: 'pending_payment',
-      })
+      .insert(orderInsert)
       .select('id')
-      .single()
 
     if (orderError) throw orderError
 
+    const orderId = (orderRows as Array<{ id: string }> | null)?.[0]?.id
+    if (!orderId) throw new Error('No se pudo obtener el ID del pedido')
+
     // Insertar ítems
     const orderItems = items.map((item) => ({
-      order_id: order.id,
+      order_id: orderId,
       product_id: item.productId,
       shade_id: item.shadeId,
       product_name: item.productName,
@@ -77,7 +81,10 @@ export async function POST(request: NextRequest) {
       subtotal: item.unitPrice * item.quantity,
     }))
 
-    const { error: itemsError } = await supabase.from('order_items').insert(orderItems)
+    const { error: itemsError } = await supabase
+      .from('order_items')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .insert(orderItems as any)
     if (itemsError) throw itemsError
 
     return NextResponse.json({ orderNumber }, { status: 201 })

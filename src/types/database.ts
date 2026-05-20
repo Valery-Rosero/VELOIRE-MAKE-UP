@@ -36,7 +36,7 @@ export interface Database {
       }
       orders: {
         Row: { id: string; user_id: string | null; order_number: string; status: OrderStatus; customer_name: string; customer_email: string; customer_phone: string; address: string; neighborhood: string; city: string; department: string; notes: string | null; subtotal: number; delivery_fee: number; total: number; payment_method: string; payment_confirmed_at: string | null; payment_confirmed_by: string | null; created_at: string; updated_at: string }
-        Insert: { user_id?: string | null; order_number: string; customer_name: string; customer_email: string; customer_phone: string; address: string; neighborhood: string; subtotal: number; delivery_fee: number; total: number; notes?: string | null }
+        Insert: { user_id?: string | null; order_number: string; status?: OrderStatus; customer_name: string; customer_email: string; customer_phone: string; address: string; neighborhood: string; city: string; department: string; payment_method: string; subtotal: number; delivery_fee: number; total: number; notes?: string | null; payment_confirmed_at?: string | null; payment_confirmed_by?: string | null }
         Update: { status?: OrderStatus; payment_confirmed_at?: string | null; payment_confirmed_by?: string | null }
       }
       order_items: {

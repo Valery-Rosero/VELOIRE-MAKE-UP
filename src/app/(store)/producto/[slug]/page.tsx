@@ -39,7 +39,7 @@ async function getProduct(slug: string): Promise<ProductDetail | null> {
       .eq('slug', slug)
       .eq('status', 'active')
       .single()
-    return (data as ProductDetail) ?? null
+    return (data as ProductDetail | null)
   } catch {
     return null
   }
