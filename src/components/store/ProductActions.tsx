@@ -1,40 +1,49 @@
 'use client'
 
 import { useState } from 'react'
-import { ShoppingBag, Check } from 'lucide-react'
-import { ShadeSelector } from './ShadeSelector'
+import Link from 'next/link'
+import { Minus, Plus, ShoppingBag } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useCartStore } from '@/lib/store/cart'
-
-interface Shade {
-  id: string
-  name: string
-  hex_color: string
-  stock: number
-  is_active: boolean
-}
+import type { ProductShade } from '@/types/product'
 
 interface ProductActionsProps {
   productId: string
   productName: string
   price: number
   imageUrl: string | null
-  shades: Shade[]
+  selectedShade: ProductShade | null
 }
 
-export function ProductActions({ productId, productName, price, imageUrl, shades }: ProductActionsProps) {
-  const activeShades = shades.filter((s) => s.is_active)
-  const hasShades = activeShades.length > 0
-
-  const [selectedShadeId, setSelectedShadeId] = useState<string | null>(
-    hasShades ? activeShades[0].id : null
-  )
+export function ProductActions({
+  productId,
+  productName,
+  price,
+  imageUrl,
+  selectedShade,
+}: ProductActionsProps) {
+  const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
+  const [showCart, setShowCart] = useState(false)
+  const [toastMsg, setToastMsg] = useState<string | null>(null)
+
   const addItem = useCartStore((s) => s.addItem)
 
-  const selectedShade = activeShades.find((s) => s.id === selectedShadeId) ?? null
-  const outOfStock = selectedShade ? selectedShade.stock === 0 : !hasShades
+  const outOfStock = !selectedShade || selectedShade.stock === 0
+  const maxQty = selectedShade && selectedShade.stock > 0 ? selectedShade.stock : 1
 
-  function handleAddToCart() {
+  // Render-body setState: clamp qty when selected shade changes (avoids useEffect)
+  const [prevShadeId, setPrevShadeId] = useState(selectedShade?.id ?? null)
+  if (prevShadeId !== (selectedShade?.id ?? null)) {
+    setPrevShadeId(selectedShade?.id ?? null)
+    if (selectedShade && qty > selectedShade.stock && selectedShade.stock > 0) {
+      setQty(selectedShade.stock)
+    } else if (!selectedShade || selectedShade.stock === 0) {
+      setQty(1)
+    }
+  }
+
+  function handleAdd() {
     if (!selectedShade || outOfStock) return
 
     addItem({
@@ -45,63 +54,130 @@ export function ProductActions({ productId, productName, price, imageUrl, shades
       shadeHex: selectedShade.hex_color,
       imageUrl,
       unitPrice: price,
-      quantity: 1,
+      quantity: qty,
     })
 
     setAdded(true)
-    setTimeout(() => setAdded(false), 2000)
+    setShowCart(true)
+    setToastMsg(`${productName} · ${selectedShade.name}`)
+
+    setTimeout(() => {
+      setAdded(false)
+      setToastMsg(null)
+    }, 1500)
   }
 
   return (
-    <div className="space-y-5">
-      {/* Selector de tono */}
-      {hasShades && (
-        <div>
-          <div className="flex items-center justify-between mb-2.5">
-            <p className="text-sm font-body font-medium text-fg">
-              Tono:{' '}
-              <span className="text-fg-2 font-normal">{selectedShade?.name ?? '—'}</span>
-            </p>
-            <span className="text-xs font-body text-fg-3">
-              {selectedShade && selectedShade.stock > 0
-                ? `${selectedShade.stock} disponibles`
-                : 'Agotado'}
-            </span>
+    <>
+      <div className="space-y-4">
+        {/* Quantity selector */}
+        {!outOfStock && (
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-body text-fg-2">Cantidad</span>
+            <div className="flex items-center border border-rim rounded-lg overflow-hidden">
+              <button
+                onClick={() => setQty((q) => Math.max(1, q - 1))}
+                disabled={qty <= 1}
+                aria-label="Reducir cantidad"
+                className="w-9 h-9 flex items-center justify-center text-fg-2 hover:text-fg hover:bg-alt transition-colors disabled:opacity-30"
+              >
+                <Minus size={14} />
+              </button>
+              <span className="w-10 text-center text-sm font-body font-medium text-fg select-none">
+                {qty}
+              </span>
+              <button
+                onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+                disabled={qty >= maxQty}
+                aria-label="Aumentar cantidad"
+                className="w-9 h-9 flex items-center justify-center text-fg-2 hover:text-fg hover:bg-alt transition-colors disabled:opacity-30"
+              >
+                <Plus size={14} />
+              </button>
+            </div>
           </div>
-          <ShadeSelector
-            shades={activeShades}
-            selectedShadeId={selectedShadeId}
-            onSelect={setSelectedShadeId}
-          />
-        </div>
-      )}
-
-      {/* Botón añadir */}
-      <button
-        onClick={handleAddToCart}
-        disabled={outOfStock || added}
-        className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-body font-medium transition-all duration-200 ${
-          added
-            ? 'bg-success text-white'
-            : outOfStock
-            ? 'bg-alt text-fg-3 cursor-not-allowed'
-            : 'bg-accent text-white hover:opacity-90 active:scale-[0.98]'
-        }`}
-      >
-        {added ? (
-          <>
-            <Check size={16} />
-            Añadido al carrito
-          </>
-        ) : outOfStock ? (
-          'Sin stock'
-        ) : (
-          <>
-            <ShoppingBag size={16} />
-            Añadir al carrito
-          </>
         )}
-      </button>
-    </div>
+
+        {/* Add to cart */}
+        <motion.button
+          onClick={handleAdd}
+          disabled={outOfStock}
+          whileTap={outOfStock ? undefined : { scale: 0.98 }}
+          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-body font-medium transition-colors duration-200 ${
+            outOfStock
+              ? 'bg-alt text-fg-3 cursor-not-allowed'
+              : added
+              ? 'bg-success text-white'
+              : 'bg-accent text-white hover:opacity-90'
+          }`}
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            {added ? (
+              <motion.span
+                key="added"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.15 }}
+              >
+                ¡Añadido!
+              </motion.span>
+            ) : outOfStock ? (
+              <motion.span key="out">Sin stock</motion.span>
+            ) : (
+              <motion.span
+                key="idle"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.15 }}
+                className="flex items-center gap-2"
+              >
+                <ShoppingBag size={16} />
+                Añadir al carrito
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
+
+        {/* Ver carrito — appears after first add */}
+        <AnimatePresence>
+          {showCart && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <Link
+                href="/carrito"
+                className="block w-full text-center py-3 rounded-xl border border-accent text-accent text-sm font-body font-medium hover:bg-rose-light transition-colors duration-150"
+              >
+                Ver carrito
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Toast */}
+      <AnimatePresence>
+        {toastMsg && (
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+          >
+            <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-fg text-card text-sm font-body shadow-lg whitespace-nowrap">
+              <ShoppingBag size={14} className="shrink-0" />
+              {toastMsg} añadido
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   )
 }

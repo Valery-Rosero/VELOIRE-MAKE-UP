@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import type { CheckoutFormData } from '@/lib/validations/checkout'
 
 export interface CartItem {
   productId: string
@@ -14,17 +15,28 @@ export interface CartItem {
 
 interface CartStore {
   items: CartItem[]
+  drawerOpen: boolean
+  checkoutData: CheckoutFormData | null
+
   addItem: (item: CartItem) => void
   removeItem: (shadeId: string) => void
   updateQuantity: (shadeId: string, quantity: number) => void
   clearCart: () => void
   total: () => number
+
+  openDrawer: () => void
+  closeDrawer: () => void
+
+  setCheckoutData: (data: CheckoutFormData) => void
+  clearCheckoutData: () => void
 }
 
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      drawerOpen: false,
+      checkoutData: null,
 
       addItem(item) {
         set((state) => {
@@ -60,7 +72,29 @@ export const useCartStore = create<CartStore>()(
       total() {
         return get().items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0)
       },
+
+      openDrawer() {
+        set({ drawerOpen: true })
+      },
+
+      closeDrawer() {
+        set({ drawerOpen: false })
+      },
+
+      setCheckoutData(data) {
+        set({ checkoutData: data })
+      },
+
+      clearCheckoutData() {
+        set({ checkoutData: null })
+      },
     }),
-    { name: 'veloire-cart' }
+    {
+      name: 'veloire-cart',
+      partialize: (state) => ({
+        items: state.items,
+        checkoutData: state.checkoutData,
+      }),
+    }
   )
 )

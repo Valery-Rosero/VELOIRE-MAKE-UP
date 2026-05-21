@@ -1,46 +1,111 @@
 'use client'
 
-interface Shade {
-  id: string
-  name: string
-  hex_color: string
-  stock: number
-  is_active: boolean
-}
+import { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import type { ProductShade } from '@/types/product'
+
+const SHADE_LIMIT = 7
 
 interface ShadeSelectorProps {
-  shades: Shade[]
-  selectedShadeId: string | null
-  onSelect: (shadeId: string) => void
+  shades: ProductShade[]
+  selectedShade: ProductShade | null
+  onSelect: (shade: ProductShade) => void
 }
 
-export function ShadeSelector({ shades, selectedShadeId, onSelect }: ShadeSelectorProps) {
+interface ShadeCircleProps {
+  shade: ProductShade
+  isSelected: boolean
+  onSelect: (shade: ProductShade) => void
+}
+
+function ShadeCircle({ shade, isSelected, onSelect }: ShadeCircleProps) {
+  const [hovered, setHovered] = useState(false)
+  const isOutOfStock = shade.stock === 0
+
   return (
-    <div className="flex flex-wrap gap-2">
-      {shades.filter(s => s.is_active).map((shade) => {
-        const isSelected = shade.id === selectedShadeId
-        const isOutOfStock = shade.stock === 0
-        return (
-          <button
-            key={shade.id}
-            onClick={() => !isOutOfStock && onSelect(shade.id)}
-            disabled={isOutOfStock}
-            title={shade.name}
-            className={`relative w-9 h-9 rounded-full border-2 transition-all duration-150 ${
-              isSelected
-                ? 'border-accent scale-110 shadow-md'
-                : 'border-transparent hover:border-rim-2'
-            } ${isOutOfStock ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
-            style={{ backgroundColor: shade.hex_color }}
+    <div className="relative">
+      <motion.button
+        onClick={() => !isOutOfStock && onSelect(shade)}
+        disabled={isOutOfStock}
+        whileHover={{ scale: 1.1 }}
+        transition={{ duration: 0.12 }}
+        onHoverStart={() => setHovered(true)}
+        onHoverEnd={() => setHovered(false)}
+        onFocus={() => setHovered(true)}
+        onBlur={() => setHovered(false)}
+        aria-label={`${shade.name}${isOutOfStock ? ' — agotado' : ''}`}
+        aria-pressed={isSelected}
+        className={`relative w-9 h-9 rounded-full transition-opacity duration-150 ${
+          isOutOfStock ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+        }`}
+        style={{
+          backgroundColor: shade.hex_color,
+          boxShadow: isSelected
+            ? '0 0 0 2.5px var(--bg-card), 0 0 0 4.5px var(--accent-rose)'
+            : undefined,
+        }}
+      >
+        {/* Agotado diagonal line */}
+        {isOutOfStock && (
+          <span
+            className="absolute inset-0 rounded-full overflow-hidden flex items-center justify-center pointer-events-none"
+            aria-hidden
           >
-            {isOutOfStock && (
-              <span className="absolute inset-0 flex items-center justify-center">
-                <span className="block w-px h-5 bg-white/80 rotate-45" />
-              </span>
-            )}
-          </button>
-        )
-      })}
+            <span className="block w-px h-8 bg-white/70 rotate-45" />
+          </span>
+        )}
+      </motion.button>
+
+      {/* Tooltip */}
+      <AnimatePresence>
+        {hovered && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.12 }}
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none z-10"
+          >
+            <div className="px-2 py-1 rounded-md bg-fg text-card text-[11px] font-body whitespace-nowrap shadow-sm">
+              {shade.name}
+              {isOutOfStock && (
+                <span className="text-fg-3 opacity-70"> · Agotado</span>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+export function ShadeSelector({ shades, selectedShade, onSelect }: ShadeSelectorProps) {
+  const [expanded, setExpanded] = useState(false)
+
+  const visible = expanded ? shades : shades.slice(0, SHADE_LIMIT)
+  const hiddenCount = shades.length - SHADE_LIMIT
+  const hasMore = !expanded && hiddenCount > 0
+
+  return (
+    <div className="flex flex-wrap gap-2 items-center">
+      {visible.map((shade) => (
+        <ShadeCircle
+          key={shade.id}
+          shade={shade}
+          isSelected={selectedShade?.id === shade.id}
+          onSelect={onSelect}
+        />
+      ))}
+
+      {hasMore && (
+        <button
+          onClick={() => setExpanded(true)}
+          aria-label={`Mostrar ${hiddenCount} tonos más`}
+          className="w-9 h-9 rounded-full border border-rim-2 bg-card text-xs font-body font-medium text-fg-2 hover:border-accent hover:text-accent transition-colors duration-150 flex items-center justify-center"
+        >
+          +{hiddenCount}
+        </button>
+      )}
     </div>
   )
 }

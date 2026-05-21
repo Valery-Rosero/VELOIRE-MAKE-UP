@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { checkoutSchema } from '@/lib/validations/checkout'
 import type { CartItem } from '@/lib/store/cart'
 
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const body: OrderBody = await request.json()
     const { items, ...formData } = body
 
-    // Validar datos del formulario
+    // Validate form data
     const parsed = checkoutSchema.safeParse(formData)
     if (!parsed.success) {
       return NextResponse.json(
@@ -27,19 +27,29 @@ export async function POST(request: NextRequest) {
 
     const data = parsed.data
     const subtotal = items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0)
-    const delivery_fee = 0
+
+    // Use admin client — bypasses RLS
+    const supabase = await createAdminClient()
+
+    // Read delivery_fee from store_config (source of truth)
+    const { data: feeRows } = await supabase
+      .from('store_config')
+      .select('value')
+      .eq('key', 'delivery_fee')
+      .limit(1)
+    const delivery_fee = parseInt(
+      (feeRows as Array<{ value: string }> | null)?.[0]?.value ?? '5000',
+      10
+    )
+
     const totalAmount = subtotal + delivery_fee
 
-    const supabase = await createClient()
-
-    // Generar número de pedido
-    const { data: orderNumberData, error: rpcError } = await supabase
-      .rpc('generate_order_number')
+    // Generate order number
+    const { data: orderNumberData, error: rpcError } = await supabase.rpc('generate_order_number')
     if (rpcError) throw rpcError
-
     const orderNumber: string = orderNumberData
 
-    // Crear el pedido
+    // Create order
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const orderInsert: any = {
       order_number: orderNumber,
@@ -57,6 +67,7 @@ export async function POST(request: NextRequest) {
       total: totalAmount,
       status: 'pending_payment',
     }
+
     const { data: orderRows, error: orderError } = await supabase
       .from('orders')
       .insert(orderInsert)
@@ -67,7 +78,7 @@ export async function POST(request: NextRequest) {
     const orderId = (orderRows as Array<{ id: string }> | null)?.[0]?.id
     if (!orderId) throw new Error('No se pudo obtener el ID del pedido')
 
-    // Insertar ítems
+    // Insert order items
     const orderItems = items.map((item) => ({
       order_id: orderId,
       product_id: item.productId,

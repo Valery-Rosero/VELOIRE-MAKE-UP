@@ -32,6 +32,7 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const itemCount = useCartStore((s) => s.items.reduce((n, i) => n + i.quantity, 0))
+  const openDrawer = useCartStore((s) => s.openDrawer)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4)
@@ -87,7 +88,11 @@ export function Header() {
             <Link href="/cuenta" aria-label="Mi cuenta" className="w-9 h-9 flex items-center justify-center rounded-lg text-fg-2 hover:text-accent hover:bg-highlight transition-colors duration-150">
               <User size={18} />
             </Link>
-            <Link href="/carrito" aria-label="Carrito" className="relative w-9 h-9 flex items-center justify-center rounded-lg text-fg-2 hover:text-accent hover:bg-highlight transition-colors duration-150">
+            <button
+              onClick={openDrawer}
+              aria-label="Abrir carrito"
+              className="relative w-9 h-9 flex items-center justify-center rounded-lg text-fg-2 hover:text-accent hover:bg-highlight transition-colors duration-150"
+            >
               <ShoppingBag size={18} />
               <AnimatePresence>
                 {itemCount > 0 && (
@@ -102,7 +107,7 @@ export function Header() {
                   </motion.span>
                 )}
               </AnimatePresence>
-            </Link>
+            </button>
             <ThemeToggle />
           </div>
         </div>
