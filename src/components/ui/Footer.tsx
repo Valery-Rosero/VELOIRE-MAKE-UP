@@ -23,7 +23,7 @@ export function Footer({ instagramUrl, whatsappNumber }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
           {/* Logo + tagline */}
           <div className="flex flex-col items-center md:items-start gap-2">
-            <Link href="/" className="font-display text-xl text-accent">
+            <Link href="/" className="font-display text-xl text-accent uppercase tracking-widest">
               Vèloire
             </Link>
             <p className="text-sm text-fg-2 text-center md:text-left leading-relaxed">

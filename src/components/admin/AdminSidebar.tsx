@@ -44,7 +44,7 @@ export function AdminSidebar({ userEmail, userName, onClose }: Props) {
         <div className="flex items-start justify-between">
           <div>
             <div className="w-7 h-px bg-accent mb-3" />
-            <span className="font-display text-2xl text-fg block leading-none tracking-[0.04em]">
+            <span className="font-display text-2xl text-fg uppercase tracking-widest block leading-none">
               Vèloire
             </span>
             <span className="font-body text-[10px] text-fg-3 uppercase tracking-[0.18em] mt-1.5 block">
