@@ -35,7 +35,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         {/* Contenido centrado */}
         <div className="flex flex-1 items-center justify-center px-6 py-10">
-          <div className="w-full max-w-[400px]">{children}</div>
+          <div className="w-full max-w-100">{children}</div>
         </div>
       </div>
     </div>

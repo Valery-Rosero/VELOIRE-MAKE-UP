@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ShoppingBag, Clock, TrendingUp, Package } from 'lucide-react'
+import { ShoppingBag, Clock, TrendingUp, Package, ArrowRight, AlertTriangle } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/server'
 import { formatPrice } from '@/lib/format'
 import type { OrderStatus } from '@/types/database'
@@ -92,147 +92,147 @@ export default async function AdminDashboardPage() {
   const hasPending = (pendingPayment ?? 0) > 0
 
   return (
-    <div>
-      <h1 className="font-display text-2xl text-fg mb-6">Dashboard</h1>
+    <div className="max-w-4xl">
 
-      {/* Stock low alert */}
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-px h-4 bg-accent" />
+          <p className="font-body text-xs text-accent uppercase tracking-widest">Bienvenida</p>
+        </div>
+        <h1 className="font-display text-3xl text-fg">Dashboard</h1>
+      </div>
+
+      {/* Low stock alert */}
       {lowStockRows.length > 0 && (
-        <div className="bg-warning/10 border border-warning/30 rounded-2xl px-5 py-4 mb-6">
-          <p className="font-body text-sm font-medium text-warning mb-2">
-            ⚠ Stock bajo en {lowStockRows.length} producto{lowStockRows.length > 1 ? 's' : ''}
-          </p>
-          <ul className="space-y-0.5 mb-3">
-            {lowStockRows.map((row) => (
-              <li key={row.product_id} className="font-body text-sm text-fg-2">
-                {row.product_name}{' '}
-                <span className="text-warning font-medium">
-                  ({row.total_stock === 0 ? 'Agotado' : `${row.min_shade_stock} und. mínimo`})
-                </span>
-              </li>
-            ))}
-          </ul>
-          <Link
-            href="/admin/inventario"
-            className="text-xs font-body text-warning hover:underline underline-offset-4"
-          >
-            Ver inventario completo →
-          </Link>
+        <div className="bg-warning/8 border border-warning/25 rounded-2xl px-5 py-4 mb-6 flex gap-4">
+          <div className="w-8 h-8 rounded-xl bg-warning/15 flex items-center justify-center shrink-0 mt-0.5">
+            <AlertTriangle size={15} className="text-warning" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-body text-sm font-medium text-warning mb-1.5">
+              Stock bajo en {lowStockRows.length} producto{lowStockRows.length > 1 ? 's' : ''}
+            </p>
+            <ul className="space-y-0.5 mb-3">
+              {lowStockRows.map((row) => (
+                <li key={row.product_id} className="font-body text-sm text-fg-2">
+                  {row.product_name}{' '}
+                  <span className="text-warning font-medium">
+                    ({row.total_stock === 0 ? 'Agotado' : `${row.min_shade_stock} und. mínimo`})
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/admin/inventario"
+              className="inline-flex items-center gap-1 text-xs font-body text-warning hover:opacity-80 transition-opacity"
+            >
+              Ver inventario completo
+              <ArrowRight size={11} />
+            </Link>
+          </div>
         </div>
       )}
 
       {/* Metric cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-card border border-rim rounded-xl p-5">
-          <div className="flex items-center justify-between mb-3">
-            <p className="font-body text-xs text-fg-3">Pedidos hoy</p>
-            <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center">
-              <ShoppingBag size={14} className="text-accent" />
-            </div>
+
+        <div className="bg-card border border-rim rounded-2xl p-5 hover:border-rim-2 transition-colors">
+          <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center mb-4">
+            <ShoppingBag size={16} className="text-accent" strokeWidth={1.5} />
           </div>
-          <p className="font-body text-[28px] font-medium text-fg leading-none">
-            {ordersToday ?? 0}
-          </p>
+          <p className="font-display text-3xl text-fg leading-none mb-1.5">{ordersToday ?? 0}</p>
+          <p className="font-body text-xs text-fg-3">Pedidos hoy</p>
         </div>
 
-        <div
-          className={`bg-card border rounded-xl p-5 ${hasPending ? 'border-accent' : 'border-rim'}`}
-        >
-          <div className="flex items-center justify-between mb-3">
-            <p className="font-body text-xs text-fg-3">Pendientes de pago</p>
-            <div className="w-7 h-7 rounded-lg bg-warning/10 flex items-center justify-center">
-              <Clock size={14} className="text-warning" />
-            </div>
+        <div className={`bg-card border rounded-2xl p-5 transition-colors ${hasPending ? 'border-accent/40 bg-highlight/30' : 'border-rim hover:border-rim-2'}`}>
+          <div className="w-9 h-9 rounded-xl bg-warning/10 flex items-center justify-center mb-4">
+            <Clock size={16} className="text-warning" strokeWidth={1.5} />
           </div>
-          <p
-            className={`font-body text-[28px] font-medium leading-none ${
-              hasPending ? 'text-accent' : 'text-fg'
-            }`}
-          >
+          <p className={`font-display text-3xl leading-none mb-1.5 ${hasPending ? 'text-accent' : 'text-fg'}`}>
             {pendingPayment ?? 0}
           </p>
+          <p className="font-body text-xs text-fg-3">Pendientes de pago</p>
         </div>
 
-        <div className="bg-card border border-rim rounded-xl p-5">
-          <div className="flex items-center justify-between mb-3">
-            <p className="font-body text-xs text-fg-3">Ingresos del mes</p>
-            <div className="w-7 h-7 rounded-lg bg-gold-light flex items-center justify-center">
-              <TrendingUp size={14} className="text-gold" />
-            </div>
+        <div className="bg-card border border-rim rounded-2xl p-5 hover:border-rim-2 transition-colors">
+          <div className="w-9 h-9 rounded-xl bg-gold-light flex items-center justify-center mb-4">
+            <TrendingUp size={16} className="text-gold" strokeWidth={1.5} />
           </div>
-          <p className="font-body text-[28px] font-medium text-gold leading-none">
-            {formatPrice(salesMonth)}
-          </p>
+          <p className="font-display text-3xl text-gold leading-none mb-1.5">{formatPrice(salesMonth)}</p>
+          <p className="font-body text-xs text-fg-3">Ingresos del mes</p>
         </div>
 
-        <div className="bg-card border border-rim rounded-xl p-5">
-          <div className="flex items-center justify-between mb-3">
-            <p className="font-body text-xs text-fg-3">Productos activos</p>
-            <div className="w-7 h-7 rounded-lg bg-success/10 flex items-center justify-center">
-              <Package size={14} className="text-success" />
-            </div>
+        <div className="bg-card border border-rim rounded-2xl p-5 hover:border-rim-2 transition-colors">
+          <div className="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center mb-4">
+            <Package size={16} className="text-success" strokeWidth={1.5} />
           </div>
-          <p className="font-body text-[28px] font-medium text-fg leading-none">
-            {activeProducts ?? 0}
-          </p>
+          <p className="font-display text-3xl text-fg leading-none mb-1.5">{activeProducts ?? 0}</p>
+          <p className="font-body text-xs text-fg-3">Productos activos</p>
         </div>
+
       </div>
 
       {/* Recent orders */}
       <div className="bg-card border border-rim rounded-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-rim">
-          <h2 className="font-body text-sm font-medium text-fg">Pedidos recientes</h2>
+
+        <div className="flex items-center justify-between px-6 py-4 border-b border-rim">
+          <div className="flex items-center gap-2.5">
+            <div className="w-px h-4 bg-accent" />
+            <h2 className="font-body text-sm font-medium text-fg">Pedidos recientes</h2>
+          </div>
           <Link
             href="/admin/pedidos"
-            className="text-xs font-body text-accent hover:underline underline-offset-4"
+            className="inline-flex items-center gap-1 text-xs font-body text-accent hover:opacity-80 transition-opacity"
           >
             Ver todos
+            <ArrowRight size={11} />
           </Link>
         </div>
 
         {recent.length === 0 ? (
-          <p className="text-center font-body text-sm text-fg-3 py-10">No hay pedidos aún.</p>
+          <div className="py-14 text-center">
+            <ShoppingBag size={32} className="text-fg-3 mx-auto mb-3" strokeWidth={1} />
+            <p className="font-body text-sm text-fg-3">No hay pedidos aún</p>
+          </div>
         ) : (
           <div className="divide-y divide-rim">
             {recent.map((order) => (
-              <div
+              <Link
                 key={order.id}
-                className={`flex items-center justify-between px-5 py-3.5 ${
-                  order.status === 'pending_payment' ? 'bg-highlight/40' : ''
+                href={`/admin/pedidos/${order.id}`}
+                className={`flex items-center justify-between px-6 py-3.5 hover:bg-highlight/40 transition-colors ${
+                  order.status === 'pending_payment' ? 'bg-highlight/20' : ''
                 }`}
               >
                 <div className="flex items-center gap-4 min-w-0">
-                  <span className="font-body text-sm font-medium text-fg shrink-0">
+                  <span className="font-body text-sm font-medium text-fg shrink-0 tabular-nums">
                     #{order.order_number}
                   </span>
                   <span className="font-body text-sm text-fg-2 truncate">{order.customer_name}</span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0 ml-4">
                   <span
-                    className={`text-[11px] font-body font-medium px-2 py-0.5 rounded-full hidden sm:inline-flex ${STATUS_COLORS[order.status]}`}
+                    className={`text-[11px] font-body font-medium px-2.5 py-1 rounded-full hidden sm:inline-flex ${STATUS_COLORS[order.status]}`}
                   >
                     {STATUS_LABELS[order.status]}
                   </span>
-                  <span className="font-body text-sm font-medium text-gold">
+                  <span className="font-body text-sm font-semibold text-gold tabular-nums">
                     {formatPrice(order.total)}
                   </span>
-                  <Link
-                    href={`/admin/pedidos/${order.id}`}
-                    className="text-xs font-body text-accent hover:underline underline-offset-4"
-                  >
-                    Ver
-                  </Link>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
 
-        <div className="px-5 py-3 border-t border-rim text-center">
+        <div className="px-6 py-3.5 border-t border-rim">
           <Link
             href="/admin/pedidos"
-            className="text-xs font-body text-fg-2 hover:text-fg transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-body text-fg-3 hover:text-fg transition-colors"
           >
-            Ver todos los pedidos →
+            Ver todos los pedidos
+            <ArrowRight size={11} />
           </Link>
         </div>
       </div>

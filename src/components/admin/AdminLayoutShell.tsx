@@ -49,7 +49,7 @@ export function AdminLayoutShell({ children, userEmail, userName }: Props) {
   }
 
   return (
-    <div className="min-h-screen flex bg-page">
+    <div className="min-h-screen flex bg-alt">
       {/* Desktop sidebar — always visible */}
       <div className="hidden lg:block shrink-0">
         <AdminSidebar userEmail={userEmail} userName={userName} />
@@ -90,7 +90,7 @@ export function AdminLayoutShell({ children, userEmail, userName }: Props) {
         <div className="lg:hidden">
           <AdminMobileHeader onMenuClick={() => setDrawerOpen(true)} />
         </div>
-        <main className="flex-1 p-4 lg:p-8">{children}</main>
+        <main className="flex-1 p-5 lg:p-10">{children}</main>
       </div>
 
       {/* Modal — salir del admin */}
@@ -107,7 +107,7 @@ export function AdminLayoutShell({ children, userEmail, userName }: Props) {
             />
             <motion.div
               key="modal"
-              className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none"
+              className="fixed inset-0 z-101 flex items-center justify-center p-4 pointer-events-none"
               initial={{ opacity: 0, scale: 0.94, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.94, y: 10 }}

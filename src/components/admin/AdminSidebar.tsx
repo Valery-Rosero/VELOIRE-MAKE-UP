@@ -26,6 +26,9 @@ export function AdminSidebar({ userEmail, userName, onClose }: Props) {
   const router = useRouter()
   const { resolvedTheme, setTheme } = useTheme()
 
+  const displayName = userName ?? 'Administradora'
+  const initials = displayName.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
+
   async function handleSignOut() {
     const supabase = createClient()
     await supabase.auth.signOut()
@@ -34,28 +37,34 @@ export function AdminSidebar({ userEmail, userName, onClose }: Props) {
   }
 
   return (
-    <aside className="w-60 bg-alt border-r border-rim flex flex-col min-h-screen">
+    <aside className="w-64 bg-card border-r border-rim flex flex-col min-h-screen">
+
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-rim flex items-start justify-between">
-        <div>
-          <span className="font-display text-xl text-accent block leading-none">Vèloire</span>
-          <span className="font-body text-[11px] text-fg-3 uppercase tracking-widest mt-0.5 block">
-            Admin
-          </span>
+      <div className="px-6 py-6 border-b border-rim">
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="w-7 h-px bg-accent mb-3" />
+            <span className="font-display text-2xl text-fg block leading-none tracking-[0.04em]">
+              Vèloire
+            </span>
+            <span className="font-body text-[10px] text-fg-3 uppercase tracking-[0.18em] mt-1.5 block">
+              Panel de administración
+            </span>
+          </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-fg-3 hover:text-fg hover:bg-highlight transition-colors mt-0.5"
+              aria-label="Cerrar menú"
+            >
+              <X size={16} />
+            </button>
+          )}
         </div>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="text-fg-3 hover:text-fg transition-colors mt-0.5"
-            aria-label="Cerrar menú"
-          >
-            <X size={18} />
-          </button>
-        )}
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
+      <nav className="flex-1 px-3 py-5 space-y-0.5">
         {NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => {
           const isActive = exact ? pathname === href : pathname.startsWith(href)
           return (
@@ -63,24 +72,31 @@ export function AdminSidebar({ userEmail, userName, onClose }: Props) {
               key={href}
               href={href}
               onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body transition-colors border-l-[3px] ${
+              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-body transition-all ${
                 isActive
-                  ? 'bg-highlight text-accent font-medium border-accent'
-                  : 'text-fg-2 hover:bg-highlight hover:text-fg border-transparent'
+                  ? 'bg-highlight text-accent font-medium'
+                  : 'text-fg-2 hover:bg-highlight/60 hover:text-fg'
               }`}
             >
-              <Icon size={18} />
+              <Icon size={17} strokeWidth={isActive ? 2 : 1.5} />
               {label}
             </Link>
           )
         })}
       </nav>
 
-      {/* User info + sign-out */}
+      {/* User */}
       <div className="border-t border-rim px-4 py-4">
-        <p className="font-body text-xs font-medium text-fg truncate">{userName ?? 'Administradora'}</p>
-        <p className="font-body text-xs text-fg-3 truncate mb-3">{userEmail}</p>
-        <div className="flex items-center justify-between mt-1">
+        <div className="flex items-center gap-3 mb-3.5">
+          <div className="w-8 h-8 rounded-full bg-highlight flex items-center justify-center shrink-0">
+            <span className="font-body text-xs font-semibold text-accent">{initials}</span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-body text-xs font-medium text-fg truncate">{displayName}</p>
+            <p className="font-body text-[11px] text-fg-3 truncate">{userEmail}</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
           <button
             onClick={handleSignOut}
             className="flex items-center gap-1.5 text-xs font-body text-fg-2 hover:text-fg transition-colors"

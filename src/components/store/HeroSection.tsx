@@ -108,7 +108,7 @@ export function HeroSection() {
           </motion.div>
 
           {/* ── Columna derecha — círculos flotantes ── */}
-          <div className="relative h-64 md:h-[500px] overflow-hidden md:overflow-visible order-first md:order-last">
+          <div className="relative h-64 md:h-125 overflow-hidden md:overflow-visible order-first md:order-last">
             {CIRCLES.map((c, i) => (
               <motion.div
                 key={i}

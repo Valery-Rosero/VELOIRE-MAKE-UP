@@ -192,7 +192,7 @@ export function CheckoutClient({ deliveryFee, prefilledData, hasSession }: Check
               onBlur={() => handleBlur('address')}
               autoComplete="street-address"
             />
-            <p className="!mt-1 text-xs font-body text-fg-3">Incluye número de casa/apartamento</p>
+            <p className="mt-1! text-xs font-body text-fg-3">Incluye número de casa/apartamento</p>
 
             <Input
               name="neighborhood"

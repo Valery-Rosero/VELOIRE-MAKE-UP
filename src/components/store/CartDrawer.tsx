@@ -31,7 +31,7 @@ function CartItemRow({ item, onRemove, onUpdate }: CartItemRowProps) {
       className="flex gap-3 items-start pb-4 border-b border-rim last:border-0 last:pb-0"
     >
       {/* Imagen */}
-      <div className="relative w-[72px] h-[72px] rounded-lg overflow-hidden bg-alt shrink-0">
+      <div className="relative w-18 h-18 rounded-lg overflow-hidden bg-alt shrink-0">
         {item.imageUrl ? (
           <Image
             src={item.imageUrl}
@@ -115,7 +115,7 @@ function EmptyCart({ onClose }: { onClose: () => void }) {
     <div className="flex flex-col items-center justify-center h-full py-16 text-center">
       <ShoppingBag size={48} className="text-fg-3 mb-4" strokeWidth={1.5} />
       <p className="font-body text-[15px] text-fg mb-1">Tu carrito está vacío</p>
-      <p className="font-body text-xs text-fg-3 leading-relaxed mb-6 max-w-[220px]">
+      <p className="font-body text-xs text-fg-3 leading-relaxed mb-6 max-w-55">
         Explora nuestra colección y encuentra tu tono perfecto
       </p>
       <button
@@ -158,7 +158,7 @@ export function CartDrawer({ open, onClose, deliveryFee, isLoggedIn }: CartDrawe
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="fixed top-0 right-0 h-full w-full max-w-[420px] bg-card border-l border-rim shadow-2xl z-50 flex flex-col"
+            className="fixed top-0 right-0 h-full w-full max-w-105 bg-card border-l border-rim shadow-2xl z-50 flex flex-col"
             aria-label="Carrito de compras"
           >
             {/* Encabezado */}

@@ -55,7 +55,7 @@ export function CategoryCards({ categories }: { categories: Category[] }) {
           >
             <Link
               href={`/catalogo?categoria=${cat.slug}`}
-              className="flex flex-col items-center justify-end w-[130px] h-[170px] rounded-2xl relative overflow-hidden"
+              className="flex flex-col items-center justify-end w-32.5 h-42.5 rounded-2xl relative overflow-hidden"
               style={{ backgroundColor: style.bg }}
             >
               {/* Círculo decorativo de fondo */}

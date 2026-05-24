@@ -27,7 +27,7 @@ export function AdminMobileHeader({ onMenuClick }: Props) {
   const pathname = usePathname()
   const { resolvedTheme, setTheme } = useTheme()
   return (
-    <header className="sticky top-0 z-40 bg-card border-b border-rim px-4 py-3 flex items-center justify-between">
+    <header className="sticky top-0 z-40 bg-card border-b border-rim px-4 h-14 flex items-center justify-between">
       <button
         onClick={onMenuClick}
         aria-label="Abrir menú"
@@ -35,9 +35,11 @@ export function AdminMobileHeader({ onMenuClick }: Props) {
       >
         <Menu size={20} />
       </button>
-      <h1 className="font-display text-lg text-fg absolute left-1/2 -translate-x-1/2">
-        {getTitle(pathname)}
-      </h1>
+
+      <div className="absolute left-1/2 -translate-x-1/2 text-center">
+        <span className="font-display text-base text-fg">{getTitle(pathname)}</span>
+      </div>
+
       <button
         onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
         aria-label="Cambiar tema"
