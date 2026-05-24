@@ -46,7 +46,7 @@ export function ProductCard({
     >
       <Link href={`/producto/${slug}`} className="block">
         {/* Imagen */}
-        <div className="relative aspect-square overflow-hidden rounded-xl bg-nude">
+        <div className="relative aspect-square overflow-hidden rounded-xl bg-alt">
           {imageUrl ? (
             <Image
               src={imageUrl}
@@ -57,14 +57,14 @@ export function ProductCard({
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="font-display text-4xl text-rose-medium select-none">V</span>
+              <span className="font-display text-4xl text-accent select-none">V</span>
             </div>
           )}
 
           {/* Badges sobre imagen */}
           <div className="absolute top-2 left-2 flex flex-col gap-1.5">
             {categoryName && (
-              <span className="px-2 py-0.5 rounded-full bg-rose-light text-rose-dark text-[11px] font-body font-medium leading-tight">
+              <span className="px-2 py-0.5 rounded-full bg-highlight text-accent text-[11px] font-body font-medium leading-tight">
                 {categoryName}
               </span>
             )}
@@ -82,7 +82,7 @@ export function ProductCard({
 
           {/* Botón hover (desktop) / siempre visible (móvil) */}
           <div className="absolute inset-x-0 bottom-0 p-2 translate-y-full group-hover:translate-y-0 md:transition-transform md:duration-200 md:ease-out">
-            <div className="bg-accent text-white text-xs font-body font-medium text-center py-2 rounded-lg">
+            <div className="bg-noir text-beige text-xs font-body font-medium text-center py-2 rounded-lg">
               Ver producto
             </div>
           </div>

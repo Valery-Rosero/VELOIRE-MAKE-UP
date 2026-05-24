@@ -4,6 +4,7 @@ import { ArrowLeft, Mail, Phone } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/server'
 import { OrderStatusUpdater } from '@/components/admin/OrderStatusUpdater'
 import { ConfirmPaymentButton } from '@/components/admin/ConfirmPaymentButton'
+import { CancelOrderButton } from '@/components/admin/CancelOrderButton'
 import { formatPrice, formatDate } from '@/lib/format'
 import type { OrderStatus } from '@/types/database'
 
@@ -24,16 +25,6 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
   delivered: 'bg-success/15 text-success',
   cancelled: 'bg-error/15 text-error',
 }
-
-const TIMELINE_STEPS: { status: OrderStatus; label: string }[] = [
-  { status: 'pending_payment', label: 'Pedido creado' },
-  { status: 'paid', label: 'Pago confirmado' },
-  { status: 'preparing', label: 'En preparación' },
-  { status: 'shipped', label: 'En camino' },
-  { status: 'delivered', label: 'Entregado' },
-]
-
-const STATUS_ORDER: OrderStatus[] = ['pending_payment', 'paid', 'preparing', 'shipped', 'delivered']
 
 interface OrderItem {
   id: string
@@ -67,6 +58,12 @@ interface Order {
   order_items: OrderItem[]
 }
 
+interface HistoryEntry {
+  status: OrderStatus
+  note: string | null
+  changed_at: string
+}
+
 interface PageProps {
   params: Promise<{ id: string }>
 }
@@ -75,30 +72,30 @@ export default async function DetallePedidoPage({ params }: PageProps) {
   const { id } = await params
   const supabase = await createAdminClient()
 
-  const { data: rows } = await supabase
-    .from('orders')
-    .select(`
-      id, order_number, status, customer_name, customer_email, customer_phone,
-      address, neighborhood, city, department, notes,
-      subtotal, delivery_fee, total, payment_method, payment_confirmed_at, created_at,
-      order_items (
-        id, product_name, shade_name, shade_hex, image_url, quantity, unit_price, subtotal
-      )
-    `)
-    .eq('id', id)
-    .limit(1)
+  const [{ data: rows }, { data: historyRows }] = await Promise.all([
+    supabase
+      .from('orders')
+      .select(`
+        id, order_number, status, customer_name, customer_email, customer_phone,
+        address, neighborhood, city, department, notes,
+        subtotal, delivery_fee, total, payment_method, payment_confirmed_at, created_at,
+        order_items (
+          id, product_name, shade_name, shade_hex, image_url, quantity, unit_price, subtotal
+        )
+      `)
+      .eq('id', id)
+      .limit(1),
+    supabase
+      .from('order_status_history')
+      .select('status, note, changed_at')
+      .eq('order_id', id)
+      .order('changed_at', { ascending: true }),
+  ])
 
   const order = (rows as Order[] | null)?.[0]
   if (!order) notFound()
 
-  const currentIndex = STATUS_ORDER.indexOf(order.status)
-  const isCancelled = order.status === 'cancelled'
-
-  function getTimestampForStep(status: OrderStatus): string | null {
-    if (status === 'pending_payment') return formatDate(order.created_at)
-    if (status === 'paid' && order.payment_confirmed_at) return formatDate(order.payment_confirmed_at)
-    return null
-  }
+  const history = (historyRows as HistoryEntry[] | null) ?? []
 
   return (
     <div className="max-w-3xl">
@@ -128,86 +125,83 @@ export default async function DetallePedidoPage({ params }: PageProps) {
       </div>
 
       {/* Status actions */}
-      <div className="mb-4">
+      <div className="mb-4 space-y-3">
         {order.status === 'pending_payment' ? (
-          <ConfirmPaymentButton
-            orderId={order.id}
-            orderNumber={order.order_number}
-            total={order.total}
-            customerEmail={order.customer_email}
-          />
-        ) : (
+          <>
+            <ConfirmPaymentButton
+              orderId={order.id}
+              orderNumber={order.order_number}
+              total={order.total}
+              customerEmail={order.customer_email}
+            />
+            <div className="bg-card border border-rim rounded-2xl p-5">
+              <p className="font-body text-sm font-medium text-fg mb-3">Cancelar pedido</p>
+              <CancelOrderButton orderId={order.id} />
+            </div>
+          </>
+        ) : order.status !== 'cancelled' ? (
           <div className="bg-card border border-rim rounded-2xl p-5">
             <p className="font-body text-sm font-medium text-fg mb-3">Actualizar estado</p>
             <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />
-            {order.payment_confirmed_at && (
-              <p className="font-body text-xs text-fg-3 mt-3">
-                Pago confirmado: {formatDate(order.payment_confirmed_at)}
-              </p>
-            )}
           </div>
-        )}
+        ) : null}
       </div>
 
-      {/* Timeline */}
+      {/* Timeline from order_status_history */}
       <div className="bg-card border border-rim rounded-2xl p-5 mb-4">
         <p className="font-body text-xs font-medium text-fg-3 uppercase tracking-wide mb-4">
           Historial
         </p>
         <div className="relative">
-          {TIMELINE_STEPS.map((step, i) => {
-            const stepIndex = STATUS_ORDER.indexOf(step.status)
-            const isDone = !isCancelled && stepIndex < currentIndex
-            const isCurrent = !isCancelled && stepIndex === currentIndex
-            const isFuture = isCancelled || stepIndex > currentIndex
-            const isLast = i === TIMELINE_STEPS.length - 1
-            const timestamp = getTimestampForStep(step.status)
+          {/* Initial entry — always present */}
+          <div className="flex gap-3">
+            <div className="flex flex-col items-center">
+              <div className="w-3 h-3 rounded-full border-2 bg-success border-success shrink-0 mt-0.5" />
+              {history.length > 0 && (
+                <div className="w-px flex-1 my-1 bg-success/40" />
+              )}
+            </div>
+            <div className={history.length > 0 ? 'pb-4' : ''}>
+              <p className="font-body text-sm text-fg">Pedido creado</p>
+              <p className="font-body text-xs text-fg-3 mt-0.5">{formatDate(order.created_at)}</p>
+            </div>
+          </div>
 
+          {/* History entries from DB trigger */}
+          {history.map((entry, i) => {
+            const isLast = i === history.length - 1
+            const isCancelled = entry.status === 'cancelled'
+            const isDone = !isLast
             return (
-              <div key={step.status} className="flex gap-3">
+              <div key={i} className="flex gap-3">
                 <div className="flex flex-col items-center">
                   <div
-                    className={`w-3 h-3 rounded-full border-2 shrink-0 mt-0.5 transition-colors ${
-                      isDone
+                    className={`w-3 h-3 rounded-full border-2 shrink-0 mt-0.5 ${
+                      isCancelled
+                        ? 'bg-error border-error'
+                        : isDone
                         ? 'bg-success border-success'
-                        : isCurrent
-                        ? 'bg-accent border-accent'
-                        : 'bg-card border-rim'
+                        : 'bg-accent border-accent'
                     }`}
                   />
                   {!isLast && (
-                    <div
-                      className={`w-px flex-1 my-1 ${
-                        isDone ? 'bg-success/40' : 'bg-rim'
-                      }`}
-                    />
+                    <div className={`w-px flex-1 my-1 ${isDone ? 'bg-success/40' : 'bg-rim'}`} />
                   )}
                 </div>
-                <div className={`pb-4 ${isLast ? 'pb-0' : ''}`}>
+                <div className={!isLast ? 'pb-4' : ''}>
                   <p
-                    className={`font-body text-sm leading-tight ${
-                      isFuture && !isCurrent ? 'text-fg-3' : 'text-fg'
-                    }`}
+                    className={`font-body text-sm ${isCancelled ? 'text-error' : 'text-fg'}`}
                   >
-                    {step.label}
+                    {STATUS_LABELS[entry.status]}
                   </p>
-                  {timestamp && (
-                    <p className="font-body text-xs text-fg-3 mt-0.5">{timestamp}</p>
+                  <p className="font-body text-xs text-fg-3 mt-0.5">{formatDate(entry.changed_at)}</p>
+                  {entry.note && (
+                    <p className="font-body text-xs text-fg-3 italic mt-0.5">&ldquo;{entry.note}&rdquo;</p>
                   )}
                 </div>
               </div>
             )
           })}
-          {isCancelled && (
-            <div className="flex gap-3">
-              <div className="flex flex-col items-center">
-                <div className="w-3 h-3 rounded-full border-2 bg-error border-error shrink-0 mt-0.5" />
-              </div>
-              <div>
-                <p className="font-body text-sm text-error">Cancelado</p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -239,7 +233,7 @@ export default async function DetallePedidoPage({ params }: PageProps) {
           <p className="font-body text-sm text-fg-2">{order.neighborhood}</p>
           <p className="font-body text-sm text-fg-2">{order.city}, {order.department}</p>
           {order.notes && (
-            <p className="font-body text-sm text-fg-3 mt-2 italic">"{order.notes}"</p>
+            <p className="font-body text-sm text-fg-3 mt-2 italic">&ldquo;{order.notes}&rdquo;</p>
           )}
         </div>
       </div>
@@ -293,6 +287,11 @@ export default async function DetallePedidoPage({ params }: PageProps) {
       <div className="bg-card border border-rim rounded-2xl p-5">
         <p className="font-body text-xs font-medium text-fg-3 uppercase tracking-wide mb-2">Pago</p>
         <p className="font-body text-sm text-fg capitalize">{order.payment_method}</p>
+        {order.payment_confirmed_at && (
+          <p className="font-body text-xs text-fg-3 mt-1">
+            Confirmado: {formatDate(order.payment_confirmed_at)}
+          </p>
+        )}
       </div>
     </div>
   )

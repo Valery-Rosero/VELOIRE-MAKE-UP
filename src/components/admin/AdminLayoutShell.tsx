@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { usePathname } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AdminSidebar } from './AdminSidebar'
 import { AdminMobileHeader } from './AdminMobileHeader'
+import { createClient } from '@/lib/supabase/client'
 
 interface Props {
   children: React.ReactNode
@@ -13,6 +15,38 @@ interface Props {
 
 export function AdminLayoutShell({ children, userEmail, userName }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [showLeaveModal, setShowLeaveModal] = useState(false)
+  const pathname = usePathname()
+  const adminPathRef = useRef('')
+
+  // Mantener la ruta admin actual en una ref para restaurarla si el usuario retrocede
+  useEffect(() => {
+    adminPathRef.current = window.location.pathname + window.location.search
+  }, [pathname])
+
+  // Interceptar el botón atrás del navegador cuando sale del admin
+  useEffect(() => {
+    function handlePopState() {
+      if (!window.location.pathname.startsWith('/admin')) {
+        window.history.pushState(null, '', adminPathRef.current)
+        setShowLeaveModal(true)
+      }
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  async function handleSignOut() {
+    setShowLeaveModal(false)
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    window.location.href = '/'
+  }
+
+  function handleGoToStore() {
+    setShowLeaveModal(false)
+    window.location.href = '/'
+  }
 
   return (
     <div className="min-h-screen flex bg-page">
@@ -58,6 +92,57 @@ export function AdminLayoutShell({ children, userEmail, userName }: Props) {
         </div>
         <main className="flex-1 p-4 lg:p-8">{children}</main>
       </div>
+
+      {/* Modal — salir del admin */}
+      <AnimatePresence>
+        {showLeaveModal && (
+          <>
+            <motion.div
+              key="modal-bg"
+              className="fixed inset-0 z-100 bg-black/60 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowLeaveModal(false)}
+            />
+            <motion.div
+              key="modal"
+              className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none"
+              initial={{ opacity: 0, scale: 0.94, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: 10 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+            >
+              <div className="bg-card border border-rim rounded-2xl p-6 max-w-xs w-full shadow-2xl pointer-events-auto">
+                <h2 className="font-display text-xl text-fg mb-1">¿Salir del admin?</h2>
+                <p className="font-body text-sm text-fg-2 mb-5 leading-relaxed">
+                  Parece que intentas salir del panel. ¿Qué deseas hacer?
+                </p>
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={handleGoToStore}
+                    className="w-full py-2.5 rounded-xl bg-highlight text-accent text-sm font-body font-medium hover:bg-accent/15 transition-colors"
+                  >
+                    Ver la tienda
+                  </button>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full py-2.5 rounded-xl bg-error/10 text-error text-sm font-body font-medium hover:bg-error/20 transition-colors"
+                  >
+                    Cerrar sesión
+                  </button>
+                  <button
+                    onClick={() => setShowLeaveModal(false)}
+                    className="text-sm font-body text-fg-3 hover:text-fg transition-colors py-2"
+                  >
+                    Quedarme en el admin
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

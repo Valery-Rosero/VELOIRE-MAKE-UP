@@ -36,7 +36,7 @@ export default async function PedidoSearchPage({ searchParams }: PageProps) {
   return (
     <main className="max-w-md mx-auto px-4 py-16">
       <div className="text-center mb-8">
-        <div className="w-12 h-12 rounded-full bg-rose-light flex items-center justify-center mx-auto mb-4">
+        <div className="w-12 h-12 rounded-full bg-highlight flex items-center justify-center mx-auto mb-4">
           <Search size={22} className="text-accent" />
         </div>
         <h1 className="font-display text-2xl text-fg mb-2">Buscar mi pedido</h1>
@@ -84,7 +84,7 @@ export default async function PedidoSearchPage({ searchParams }: PageProps) {
 
         <button
           type="submit"
-          className="w-full py-3 rounded-xl bg-accent text-white text-sm font-body font-medium hover:opacity-90 transition-opacity"
+          className="w-full py-3 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity"
         >
           Buscar mi pedido
         </button>

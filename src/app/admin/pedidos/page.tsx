@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Plus } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/server'
 import { formatPrice, formatRelativeDate } from '@/lib/format'
 import { OrdersSearch } from '@/components/admin/OrdersSearch'
@@ -85,7 +86,7 @@ export default async function PedidosAdminPage({ searchParams }: PageProps) {
     .range(from, to)
 
   if (status && ALL_STATUSES.includes(status as OrderStatus)) {
-    query = query.eq('status', status)
+    query = query.eq('status', status as OrderStatus)
   }
 
   if (q) {
@@ -98,13 +99,22 @@ export default async function PedidosAdminPage({ searchParams }: PageProps) {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
-        <h1 className="font-display text-2xl text-fg">Pedidos</h1>
-        {pendingCount > 0 && (
-          <span className="font-body text-xs font-medium bg-rose text-white px-2 py-0.5 rounded-full">
-            {pendingCount} pendiente{pendingCount !== 1 ? 's' : ''}
-          </span>
-        )}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <h1 className="font-display text-2xl text-fg">Pedidos</h1>
+          {pendingCount > 0 && (
+            <span className="font-body text-xs font-medium bg-rose-vivid text-white px-2 py-0.5 rounded-full">
+              {pendingCount} pendiente{pendingCount !== 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
+        <Link
+          href="/admin/pedidos/nuevo"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity"
+        >
+          <Plus size={15} />
+          Nuevo pedido
+        </Link>
       </div>
 
       {/* Status tabs */}
@@ -112,7 +122,7 @@ export default async function PedidosAdminPage({ searchParams }: PageProps) {
         <Link
           href="/admin/pedidos"
           className={`px-3 py-1.5 rounded-full text-xs font-body font-medium transition-colors ${
-            !status ? 'bg-accent text-white' : 'bg-card border border-rim text-fg-2 hover:border-rim-2'
+            !status ? 'bg-noir text-beige' : 'bg-card border border-rim text-fg-2 hover:border-rim-2'
           }`}
         >
           Todos {count && !status ? `(${count})` : ''}
@@ -127,12 +137,12 @@ export default async function PedidosAdminPage({ searchParams }: PageProps) {
               href={`/admin/pedidos?status=${s}`}
               className={`relative px-3 py-1.5 rounded-full text-xs font-body font-medium transition-colors ${
                 isActive
-                  ? 'bg-accent text-white'
+                  ? 'bg-noir text-beige'
                   : 'bg-card border border-rim text-fg-2 hover:border-rim-2'
               }`}
             >
               {isPending && cnt > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose animate-pulse" />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-vivid animate-pulse" />
               )}
               {STATUS_TAB_LABELS[s]}
               {cnt > 0 && <span className="ml-1 opacity-70">({cnt})</span>}
@@ -156,12 +166,12 @@ export default async function PedidosAdminPage({ searchParams }: PageProps) {
               <div
                 key={order.id}
                 className={`flex items-center justify-between px-5 py-3.5 ${
-                  order.status === 'pending_payment' ? 'bg-rose-light/30' : ''
+                  order.status === 'pending_payment' ? 'bg-highlight/30' : ''
                 }`}
               >
                 <div className="flex items-start gap-4 min-w-0">
                   <div className="shrink-0">
-                    <p className="font-mono text-sm font-medium text-rose">#{order.order_number}</p>
+                    <p className="font-mono text-sm font-medium text-accent">#{order.order_number}</p>
                     <p className="font-body text-xs text-fg-3 mt-0.5">
                       {order.item_count} producto{order.item_count !== 1 ? 's' : ''}
                     </p>
@@ -205,7 +215,7 @@ export default async function PedidosAdminPage({ searchParams }: PageProps) {
               href={`/admin/pedidos?${status ? `status=${status}&` : ''}${q ? `q=${q}&` : ''}page=${p}`}
               className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-body transition-colors ${
                 p === currentPage
-                  ? 'bg-accent text-white'
+                  ? 'bg-noir text-beige'
                   : 'bg-card border border-rim text-fg-2 hover:border-rim-2'
               }`}
             >

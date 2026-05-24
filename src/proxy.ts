@@ -1,6 +1,16 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+const AUTH_PAGES = ['/login', '/registro', '/recuperar-contrasena', '/nueva-contrasena']
+
+function clearAuthCookies(response: NextResponse, request: NextRequest) {
+  request.cookies.getAll().forEach((cookie) => {
+    if (cookie.name.startsWith('sb-')) {
+      response.cookies.delete(cookie.name)
+    }
+  })
+}
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -9,11 +19,11 @@ export async function proxy(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() { return request.cookies.getAll() },
+        getAll() {
+          return request.cookies.getAll()
+        },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
@@ -23,27 +33,50 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-  if (request.nextUrl.pathname.startsWith('/admin')) {
+  const { pathname } = request.nextUrl
+  const isAuthPage = AUTH_PAGES.some((p) => pathname.startsWith(p))
+  const isProtectedPage = pathname.startsWith('/admin') || pathname.startsWith('/cuenta')
+
+  // If the session is invalid (deleted user, expired token) on a protected route, clear cookies and redirect to login.
+  // Public pages stay accessible even with a stale session.
+  if (authError && isProtectedPage) {
+    const response = NextResponse.redirect(new URL('/login', request.url))
+    clearAuthCookies(response, request)
+    return response
+  }
+
+  // On public pages with a stale session, clear the cookies silently so the user appears as guest.
+  if (authError && !isAuthPage) {
+    const response = NextResponse.next({ request })
+    clearAuthCookies(response, request)
+    return response
+  }
+
+  if (pathname.startsWith('/admin')) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
-    const { data: profile } = await supabase
+    const { data: profileRows } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
-      .single()
-
-    if (profile?.role !== 'admin') {
+      .limit(1)
+    const role = (profileRows as Array<{ role: string }> | null)?.[0]?.role
+    if (role !== 'admin') {
       return NextResponse.redirect(new URL('/', request.url))
     }
   }
 
-  if (user && (
-    request.nextUrl.pathname === '/login' ||
-    request.nextUrl.pathname === '/registro'
-  )) {
+  if (pathname.startsWith('/cuenta')) {
+    if (!user) {
+      const redirectTo = encodeURIComponent(pathname + request.nextUrl.search)
+      return NextResponse.redirect(new URL(`/login?redirectTo=${redirectTo}`, request.url))
+    }
+  }
+
+  if (user && (pathname === '/login' || pathname === '/registro')) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 

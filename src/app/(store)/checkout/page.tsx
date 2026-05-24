@@ -1,66 +1,62 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { CheckoutClient } from '@/components/store/CheckoutClient'
 import type { CheckoutFormData } from '@/lib/validations/checkout'
 
-async function getPageData(): Promise<{
-  deliveryFee: number
-  prefilledData: Partial<CheckoutFormData> | null
-  hasSession: boolean
-}> {
-  try {
-    const supabase = await createClient()
+export default async function CheckoutPage() {
+  const supabase = await createClient()
 
-    const [configResult, userResult] = await Promise.all([
+  // Auth check outside try/catch — redirect() throws a special error that
+  // must not be swallowed by a catch block
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login?redirectTo=/checkout')
+
+  let deliveryFee = 5000
+  let prefilledData: Partial<CheckoutFormData> | null = null
+
+  try {
+    const [configResult, profileResult] = await Promise.all([
       supabase
         .from('store_config')
         .select('value')
         .eq('key', 'delivery_fee')
         .limit(1),
-      supabase.auth.getUser(),
+      supabase
+        .from('profiles')
+        .select('full_name, email, phone')
+        .eq('id', user.id)
+        .limit(1),
     ])
 
-    const deliveryFee = parseInt(
+    deliveryFee = parseInt(
       (configResult.data as Array<{ value: string }> | null)?.[0]?.value ?? '5000',
       10
     )
 
-    const user = userResult.data.user
-    if (!user) return { deliveryFee, prefilledData: null, hasSession: false }
-
-    const { data: profileRows } = await supabase
-      .from('profiles')
-      .select('full_name, email, phone')
-      .eq('id', user.id)
-      .limit(1)
-
     const profile = (
-      profileRows as Array<{ full_name: string | null; email: string; phone: string | null }> | null
+      profileResult.data as Array<{
+        full_name: string | null
+        email: string
+        phone: string | null
+      }> | null
     )?.[0]
 
-    if (!profile) return { deliveryFee, prefilledData: null, hasSession: true }
-
-    return {
-      deliveryFee,
-      hasSession: true,
-      prefilledData: {
+    if (profile) {
+      prefilledData = {
         customer_name: profile.full_name ?? '',
         customer_email: profile.email,
         customer_phone: profile.phone ?? '',
-      },
+      }
     }
   } catch {
-    return { deliveryFee: 5000, prefilledData: null, hasSession: false }
+    // Use defaults if data fetching fails
   }
-}
-
-export default async function CheckoutPage() {
-  const { deliveryFee, prefilledData, hasSession } = await getPageData()
 
   return (
     <CheckoutClient
       deliveryFee={deliveryFee}
       prefilledData={prefilledData}
-      hasSession={hasSession}
+      hasSession={true}
     />
   )
 }

@@ -1,10 +1,12 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Plus } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/server'
 import { formatPrice } from '@/lib/format'
 import { ToggleProductStatus } from '@/components/admin/ToggleProductStatus'
 import { DeleteProductButton } from '@/components/admin/DeleteProductButton'
 import { ProductsSearch } from '@/components/admin/ProductsSearch'
+import type { ProductStatus } from '@/types/database'
 
 const STATUS_LABELS = { draft: 'Borrador', active: 'Activo', inactive: 'Inactivo' }
 const STATUS_COLORS = {
@@ -52,7 +54,7 @@ export default async function ProductosAdminPage({ searchParams }: PageProps) {
     .range(from, to)
 
   if (status && ['active', 'draft', 'inactive'].includes(status)) {
-    query = query.eq('status', status)
+    query = query.eq('status', status as ProductStatus)
   }
   if (q) {
     query = query.ilike('name', `%${q}%`)
@@ -68,7 +70,7 @@ export default async function ProductosAdminPage({ searchParams }: PageProps) {
         <h1 className="font-display text-2xl text-fg">Productos</h1>
         <Link
           href="/admin/productos/nuevo"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-accent text-white text-sm font-body font-medium hover:opacity-90 transition-opacity"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity"
         >
           <Plus size={15} />
           Nuevo producto
@@ -89,7 +91,7 @@ export default async function ProductosAdminPage({ searchParams }: PageProps) {
               href={`/admin/productos${opt.value ? `?status=${opt.value}` : ''}`}
               className={`px-3 py-1.5 rounded-full text-xs font-body font-medium transition-colors ${
                 status === opt.value || (!status && !opt.value)
-                  ? 'bg-accent text-white'
+                  ? 'bg-noir text-beige'
                   : 'bg-card border border-rim text-fg-2 hover:border-rim-2'
               }`}
             >
@@ -136,7 +138,7 @@ export default async function ProductosAdminPage({ searchParams }: PageProps) {
                     {/* Thumbnail */}
                     <div className="w-12 h-12 rounded-lg overflow-hidden border border-rim bg-alt shrink-0">
                       {mainImage ? (
-                        <img src={mainImage} alt={product.name} className="w-full h-full object-cover" />
+                        <Image src={mainImage} alt={product.name} width={48} height={48} className="object-cover w-full h-full" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-fg-3 text-xs">—</div>
                       )}
@@ -209,7 +211,7 @@ export default async function ProductosAdminPage({ searchParams }: PageProps) {
               href={`/admin/productos?${status ? `status=${status}&` : ''}${q ? `q=${q}&` : ''}page=${p}`}
               className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-body transition-colors ${
                 p === currentPage
-                  ? 'bg-accent text-white'
+                  ? 'bg-noir text-beige'
                   : 'bg-card border border-rim text-fg-2 hover:border-rim-2'
               }`}
             >

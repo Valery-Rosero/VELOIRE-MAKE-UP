@@ -66,8 +66,8 @@ export function CatalogoFilters({ categories, activeCategory, activeOrder }: Cat
           onClick={() => setCategory(null)}
           className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-body font-medium transition-colors duration-150 ${
             !activeCategory
-              ? 'bg-accent text-white'
-              : 'bg-highlight text-rose-dark hover:bg-accent hover:text-white'
+              ? 'bg-noir text-beige'
+              : 'bg-highlight text-fg-2 hover:bg-noir hover:text-beige'
           }`}
         >
           Todos
@@ -78,8 +78,8 @@ export function CatalogoFilters({ categories, activeCategory, activeOrder }: Cat
             onClick={() => setCategory(cat.slug)}
             className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-body font-medium transition-colors duration-150 ${
               activeCategory === cat.slug
-                ? 'bg-accent text-white'
-                : 'bg-highlight text-rose-dark hover:bg-accent hover:text-white'
+                ? 'bg-noir text-beige'
+                : 'bg-highlight text-fg-2 hover:bg-noir hover:text-beige'
             }`}
           >
             {cat.name}

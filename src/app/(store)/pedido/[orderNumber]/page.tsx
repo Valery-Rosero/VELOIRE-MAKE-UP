@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import type { OrderStatus } from '@/types/database'
 import { CopyButton } from '@/components/ui/CopyButton'
 import { OrderCheckAnimation } from '@/components/store/OrderCheckAnimation'
+import { CancelOrderButton } from '@/components/store/CancelOrderButton'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -141,6 +142,9 @@ function OrderTimeline({ status }: { status: OrderStatus }) {
 
 export default async function PedidoPage({ params }: PageProps) {
   const { orderNumber } = await params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   const order = await getOrder(orderNumber)
 
   if (!order) notFound()
@@ -148,6 +152,7 @@ export default async function PedidoPage({ params }: PageProps) {
   const isPendingPayment = order.status === 'pending_payment'
   const isCancelled = order.status === 'cancelled'
   const statusMessage = STATUS_MESSAGES[order.status] ?? ''
+  const canCancel = isPendingPayment && !!user && user.email === order.customer_email
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-12">
@@ -165,7 +170,7 @@ export default async function PedidoPage({ params }: PageProps) {
       </div>
 
       {/* Order number */}
-      <div className="flex items-center justify-center gap-2 bg-rose-light border border-rim rounded-xl px-5 py-3 mb-6 mx-auto max-w-sm">
+      <div className="flex items-center justify-center gap-2 bg-highlight border border-rim rounded-xl px-5 py-3 mb-6 mx-auto max-w-sm">
         <p className="font-body text-sm font-medium text-fg tracking-wide">
           {order.order_number}
         </p>
@@ -202,7 +207,7 @@ export default async function PedidoPage({ params }: PageProps) {
         <div className="space-y-3">
           {order.order_items.map((item) => (
             <div key={item.id} className="flex items-center gap-3">
-              <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-nude shrink-0">
+              <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-alt shrink-0">
                 {item.image_url ? (
                   <Image
                     src={item.image_url}
@@ -263,8 +268,15 @@ export default async function PedidoPage({ params }: PageProps) {
         </div>
       </div>
 
+      {/* Cancel order */}
+      {canCancel && (
+        <div className="mt-4 text-center">
+          <CancelOrderButton orderId={order.id} />
+        </div>
+      )}
+
       {/* Back to store */}
-      <div className="mt-6 text-center">
+      <div className="mt-4 text-center">
         <Link
           href="/"
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-rim text-fg-2 text-sm font-body hover:border-rim-2 hover:text-fg transition-colors"

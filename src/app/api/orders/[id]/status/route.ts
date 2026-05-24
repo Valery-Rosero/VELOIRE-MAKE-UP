@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
 import type { OrderStatus } from '@/types/database'
 
 const VALID_STATUSES: OrderStatus[] = [
@@ -18,11 +18,17 @@ export async function PATCH(
     return NextResponse.json({ error: 'Estado inválido.' }, { status: 400 })
   }
 
-  const supabase = await createAdminClient()
+  const [supabase, authClient] = await Promise.all([
+    createAdminClient(),
+    createClient(),
+  ])
 
-  const updateData: Record<string, unknown> = { status }
+  const { data: { user } } = await authClient.auth.getUser()
+
+  const updateData: { status: OrderStatus; payment_confirmed_at?: string; payment_confirmed_by?: string } = { status }
   if (status === 'paid') {
     updateData.payment_confirmed_at = new Date().toISOString()
+    if (user?.id) updateData.payment_confirmed_by = user.id
   }
 
   const { error } = await supabase.from('orders').update(updateData).eq('id', id)

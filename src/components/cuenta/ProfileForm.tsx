@@ -111,7 +111,7 @@ export function ProfileForm({ userId, initialName, initialPhone }: ProfileFormPr
         <button
           type="submit"
           disabled={loading || !isDirty}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>

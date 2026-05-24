@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ShoppingBag, Clock, TrendingUp, Package } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/server'
-import { formatPrice, formatDate } from '@/lib/format'
+import { formatPrice } from '@/lib/format'
 import type { OrderStatus } from '@/types/database'
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
@@ -135,7 +135,7 @@ export default async function AdminDashboardPage() {
         </div>
 
         <div
-          className={`bg-card border rounded-xl p-5 ${hasPending ? 'border-rose' : 'border-rim'}`}
+          className={`bg-card border rounded-xl p-5 ${hasPending ? 'border-accent' : 'border-rim'}`}
         >
           <div className="flex items-center justify-between mb-3">
             <p className="font-body text-xs text-fg-3">Pendientes de pago</p>
@@ -145,7 +145,7 @@ export default async function AdminDashboardPage() {
           </div>
           <p
             className={`font-body text-[28px] font-medium leading-none ${
-              hasPending ? 'text-rose' : 'text-fg'
+              hasPending ? 'text-accent' : 'text-fg'
             }`}
           >
             {pendingPayment ?? 0}
@@ -197,7 +197,7 @@ export default async function AdminDashboardPage() {
               <div
                 key={order.id}
                 className={`flex items-center justify-between px-5 py-3.5 ${
-                  order.status === 'pending_payment' ? 'bg-rose-light/40' : ''
+                  order.status === 'pending_payment' ? 'bg-highlight/40' : ''
                 }`}
               >
                 <div className="flex items-center gap-4 min-w-0">

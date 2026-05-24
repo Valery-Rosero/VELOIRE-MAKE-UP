@@ -152,7 +152,7 @@ export function ConfigForm({ config }: Props) {
             <button
               type="submit"
               disabled={isPending}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending && savedSection === null ? (
                 <Loader2 size={13} className="animate-spin" />

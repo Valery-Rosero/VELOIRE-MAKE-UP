@@ -1,45 +1,61 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Dream Avenue';
+  src: url('/fonts/dream-avenue.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ─── Clase dark via next-themes (attribute="class") ─── */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ─── Variables de tema ─── */
 :root {
   /* Fondos */
-  --bg-page: #FAF9F8;
-  --bg-card: #FFFFFF;
-  --bg-highlight: #FBEAF0;
-  --bg-alt: #F2F0EF;
+  --bg-page: #faf6f3;
+  --bg-card: #ffffff;
+  --bg-highlight: #f9edf2;
+  --bg-alt: #f5e1d3;
 
   /* Texto */
-  --fg-primary: #2D2D2D;
-  --fg-secondary: #6B6B6B;
-  --fg-tertiary: #9E9E9E;
+  --fg-primary: #1a1a1a;
+  --fg-secondary: #6b4f5a;
+  --fg-tertiary: #b09090;
 
   /* Bordes */
-  --border-soft: #EBEBEB;
-  --border-medium: #D6D6D6;
+  --border-soft: #e8d0c0;
+  --border-medium: #d4b8a8;
 
   /* Acentos (cambian en dark mode) */
-  --accent-rose: #D4537E;
+  --accent-rose: #a56583;
   --accent-gold: #B8860B;
+
+  /* Par invertido noir/beige */
+  --noir: #1a1a1a;
+  --beige: #f5e1d3;
 }
 
 .dark {
-  --bg-page: #1A1118;
-  --bg-card: #241820;
-  --bg-highlight: #2E1A24;
-  --bg-alt: #2E1A24;
+  --bg-page: #130d10;
+  --bg-card: #1e1218;
+  --bg-highlight: #2e1a22;
+  --bg-alt: #1a1117;
 
-  --fg-primary: #F5EEF2;
-  --fg-secondary: #C8AABB;
-  --fg-tertiary: #7A6470;
+  --fg-primary: #f5e1d3;
+  --fg-secondary: #c8b4b4;
+  --fg-tertiary: #8a7070;
 
-  --border-soft: #3D2535;
-  --border-medium: #3D2535;
+  --border-soft: #3d2a2a;
+  --border-medium: #4d3535;
 
-  --accent-rose: #E8709A;
+  --accent-rose: #c08fa2;
   --accent-gold: #D4A017;
+
+  /* Invertido en dark: noir se vuelve claro, beige se vuelve oscuro */
+  --noir: #f5e1d3;
+  --beige: #1a1a1a;
 }
 
 /* ─── Tokens de Tailwind v4 ─── */
@@ -63,13 +79,17 @@
   --color-accent: var(--accent-rose);
   --color-accent-gold: var(--accent-gold);
 
+  /* Par noir/beige (se invierten en dark mode) */
+  --color-noir: var(--noir);
+  --color-beige: var(--beige);
+
   /* Marca estática (no cambian con el tema) */
-  --color-rose: #D4537E;
-  --color-rose-dark: #993556;
-  --color-rose-light: #FBEAF0;
-  --color-rose-medium: #ED93B1;
-  --color-rose-bright: #E8709A;
-  --color-nude: #F8EBE8;
+  --color-rose: #a56583;
+  --color-rose-dark: #7a3d5a;
+  --color-rose-light: #f9edf2;
+  --color-rose-medium: #c08fa2;
+  --color-rose-vivid: #ed4a89;
+  --color-nude: #f5e1d3;
   --color-gold: #B8860B;
   --color-gold-bright: #D4A017;
   --color-gold-light: #FFF8E1;
@@ -81,7 +101,7 @@
   --color-info: #185FA5;
 
   /* Tipografía */
-  --font-display: var(--font-playfair), serif;
+  --font-display: 'Dream Avenue', serif;
   --font-body: var(--font-inter), sans-serif;
 }
 

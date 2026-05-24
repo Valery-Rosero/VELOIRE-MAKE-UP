@@ -10,3 +10,16 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
   revalidatePath('/admin/pedidos')
   revalidatePath(`/admin/pedidos/${orderId}`)
 }
+
+export async function cancelOrder(orderId: string): Promise<{ success: true } | { error: string }> {
+  const supabase = await createAdminClient()
+  const { error } = await supabase
+    .from('orders')
+    .update({ status: 'cancelled' })
+    .eq('id', orderId)
+    .eq('status', 'pending_payment')
+  if (error) return { error: error.message }
+  revalidatePath('/admin/pedidos')
+  revalidatePath(`/admin/pedidos/${orderId}`)
+  return { success: true }
+}

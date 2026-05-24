@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, ShoppingBag, Package, BarChart2, Settings, X, LogOut } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { LayoutDashboard, ShoppingBag, Package, BarChart2, Settings, X, LogOut, Sun, Moon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 const NAV_ITEMS = [
@@ -23,11 +24,12 @@ interface Props {
 export function AdminSidebar({ userEmail, userName, onClose }: Props) {
   const pathname = usePathname()
   const router = useRouter()
+  const { resolvedTheme, setTheme } = useTheme()
 
   async function handleSignOut() {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/login')
+    router.push('/')
     router.refresh()
   }
 
@@ -63,7 +65,7 @@ export function AdminSidebar({ userEmail, userName, onClose }: Props) {
               onClick={onClose}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body transition-colors border-l-[3px] ${
                 isActive
-                  ? 'bg-rose-light text-rose font-medium border-rose'
+                  ? 'bg-highlight text-accent font-medium border-accent'
                   : 'text-fg-2 hover:bg-highlight hover:text-fg border-transparent'
               }`}
             >
@@ -78,13 +80,22 @@ export function AdminSidebar({ userEmail, userName, onClose }: Props) {
       <div className="border-t border-rim px-4 py-4">
         <p className="font-body text-xs font-medium text-fg truncate">{userName ?? 'Administradora'}</p>
         <p className="font-body text-xs text-fg-3 truncate mb-3">{userEmail}</p>
-        <button
-          onClick={handleSignOut}
-          className="flex items-center gap-1.5 text-xs font-body text-fg-2 hover:text-fg transition-colors"
-        >
-          <LogOut size={13} />
-          Cerrar sesión
-        </button>
+        <div className="flex items-center justify-between mt-1">
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-1.5 text-xs font-body text-fg-2 hover:text-fg transition-colors"
+          >
+            <LogOut size={13} />
+            Cerrar sesión
+          </button>
+          <button
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+            aria-label="Cambiar tema"
+            className="p-1.5 rounded-lg text-fg-2 hover:text-fg hover:bg-highlight transition-colors"
+          >
+            {resolvedTheme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
+        </div>
       </div>
     </aside>
   )

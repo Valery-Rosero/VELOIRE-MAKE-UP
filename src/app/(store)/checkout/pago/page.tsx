@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { PagoClient } from '@/components/store/PagoClient'
 
@@ -19,16 +20,20 @@ async function getPageData(): Promise<{
       ])
     )
     return {
-      nequiNumber: config.nequi_number ?? '',
+      nequiNumber: config.nequi_number ?? '3155924590',
       nequiName: config.nequi_name ?? '',
       deliveryFee: parseInt(config.delivery_fee ?? '5000', 10),
     }
   } catch {
-    return { nequiNumber: '', nequiName: '', deliveryFee: 5000 }
+    return { nequiNumber: '3155924590', nequiName: '', deliveryFee: 5000 }
   }
 }
 
 export default async function PagoPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login?redirectTo=/checkout')
+
   const { nequiNumber, nequiName, deliveryFee } = await getPageData()
   return (
     <PagoClient

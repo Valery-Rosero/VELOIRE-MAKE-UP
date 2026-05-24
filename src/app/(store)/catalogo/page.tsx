@@ -91,7 +91,7 @@ async function getProducts(
     }
 
     const { data, count } = await query
-    return { products: (data as CatalogoProduct[]) ?? [], total: count ?? 0 }
+    return { products: (data as unknown as CatalogoProduct[]) ?? [], total: count ?? 0 }
   } catch {
     return { products: [], total: 0 }
   }

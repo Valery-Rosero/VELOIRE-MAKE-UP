@@ -53,7 +53,7 @@ export function ConfirmPaymentButton({ orderId, orderNumber, total, customerEmai
         <p className="font-display text-3xl text-gold mb-5">{formatPrice(total)}</p>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center justify-center gap-2 w-full px-5 py-2.5 rounded-xl bg-success text-white text-sm font-body font-medium hover:opacity-90 transition-opacity"
+          className="flex items-center justify-center gap-2 w-full px-5 py-2.5 rounded-xl bg-rose-vivid text-white text-sm font-body font-medium hover:opacity-90 transition-opacity"
         >
           <CheckCircle size={16} />
           Confirmar pago recibido
@@ -84,7 +84,7 @@ export function ConfirmPaymentButton({ orderId, orderNumber, total, customerEmai
             <p className="font-display text-2xl text-gold mb-4">{formatPrice(total)}</p>
 
             <p className="font-body text-xs text-fg-3 mb-5">
-              Al confirmar, el estado del pedido cambiará a "Pago confirmado" y se notificará al cliente.
+              Al confirmar, el estado del pedido cambiará a &ldquo;Pago confirmado&rdquo; y se notificará al cliente.
             </p>
 
             {error && (
@@ -102,7 +102,7 @@ export function ConfirmPaymentButton({ orderId, orderNumber, total, customerEmai
               <button
                 onClick={handleConfirm}
                 disabled={isPending}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-success text-white text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-rose-vivid text-white text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPending && <Loader2 size={13} className="animate-spin" />}
                 Confirmar

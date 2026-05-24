@@ -11,6 +11,7 @@ interface CartDrawerProps {
   open: boolean
   onClose: () => void
   deliveryFee: number
+  isLoggedIn: boolean
 }
 
 interface CartItemRowProps {
@@ -30,7 +31,7 @@ function CartItemRow({ item, onRemove, onUpdate }: CartItemRowProps) {
       className="flex gap-3 items-start pb-4 border-b border-rim last:border-0 last:pb-0"
     >
       {/* Imagen */}
-      <div className="relative w-[72px] h-[72px] rounded-lg overflow-hidden bg-nude shrink-0">
+      <div className="relative w-[72px] h-[72px] rounded-lg overflow-hidden bg-alt shrink-0">
         {item.imageUrl ? (
           <Image
             src={item.imageUrl}
@@ -68,7 +69,8 @@ function CartItemRow({ item, onRemove, onUpdate }: CartItemRowProps) {
           <button
             onClick={() => onUpdate(item.shadeId, item.quantity - 1)}
             aria-label="Reducir cantidad"
-            className="w-6 h-6 flex items-center justify-center rounded border border-rim text-fg-2 hover:border-rim-2 hover:text-fg transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded border border-rim text-fg-2 hover:border-rim-2 hover:text-fg transition-colors disabled:opacity-30"
+            disabled={item.quantity <= 1}
           >
             <Minus size={10} />
           </button>
@@ -78,10 +80,14 @@ function CartItemRow({ item, onRemove, onUpdate }: CartItemRowProps) {
           <button
             onClick={() => onUpdate(item.shadeId, item.quantity + 1)}
             aria-label="Aumentar cantidad"
-            className="w-6 h-6 flex items-center justify-center rounded border border-rim text-fg-2 hover:border-rim-2 hover:text-fg transition-colors"
+            disabled={item.quantity >= (item.stock ?? Infinity)}
+            className="w-6 h-6 flex items-center justify-center rounded border border-rim text-fg-2 hover:border-rim-2 hover:text-fg transition-colors disabled:opacity-30"
           >
             <Plus size={10} />
           </button>
+          {item.stock != null && item.quantity >= item.stock && (
+            <span className="font-body text-[10px] text-warning ml-1">máx.</span>
+          )}
         </div>
       </div>
 
@@ -114,7 +120,7 @@ function EmptyCart({ onClose }: { onClose: () => void }) {
       </p>
       <button
         onClick={handleGoToCollection}
-        className="px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-body font-medium hover:opacity-90 transition-opacity"
+        className="px-5 py-2.5 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity"
       >
         Ver colección
       </button>
@@ -122,7 +128,7 @@ function EmptyCart({ onClose }: { onClose: () => void }) {
   )
 }
 
-export function CartDrawer({ open, onClose, deliveryFee }: CartDrawerProps) {
+export function CartDrawer({ open, onClose, deliveryFee, isLoggedIn }: CartDrawerProps) {
   const { items, removeItem, updateQuantity, total } = useCartStore()
 
   const subtotal = total()
@@ -218,12 +224,18 @@ export function CartDrawer({ open, onClose, deliveryFee }: CartDrawerProps) {
                 </div>
 
                 <Link
-                  href="/checkout"
+                  href={isLoggedIn ? '/checkout' : '/login?redirectTo=/checkout'}
                   onClick={onClose}
-                  className="block w-full text-center py-3.5 rounded-xl bg-accent text-white text-sm font-body font-medium hover:opacity-90 transition-opacity"
+                  className="block w-full text-center py-3.5 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity"
                 >
-                  Ir a pagar
+                  {isLoggedIn ? 'Ir a pagar' : 'Iniciar sesión para comprar'}
                 </Link>
+
+                {!isLoggedIn && (
+                  <p className="text-center text-xs font-body text-fg-3">
+                    Tu carrito se guardará mientras inicias sesión
+                  </p>
+                )}
 
                 <p className="flex items-center justify-center gap-1.5 text-xs font-body text-fg-3">
                   <Lock size={11} />

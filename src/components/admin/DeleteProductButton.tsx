@@ -49,7 +49,7 @@ export function DeleteProductButton({ productId, productName }: Props) {
           <div className="relative bg-card rounded-2xl p-6 w-full max-w-sm shadow-xl border border-rim">
             <h2 className="font-display text-lg text-fg mb-2">¿Eliminar este producto?</h2>
             <p className="font-body text-sm text-fg-2 mb-1">
-              <span className="font-medium text-fg">"{productName}"</span> desaparecerá de la
+              <span className="font-medium text-fg">&ldquo;{productName}&rdquo;</span> desaparecerá de la
               tienda.
             </p>
             <p className="font-body text-sm text-fg-3 mb-4">Esta acción no se puede deshacer.</p>

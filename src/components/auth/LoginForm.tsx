@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
@@ -22,7 +22,7 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
 
   const tooManyAttempts = attempts >= MAX_ATTEMPTS
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: { preventDefault(): void; currentTarget: HTMLFormElement }) {
     e.preventDefault()
     if (tooManyAttempts) return
 
@@ -34,21 +34,30 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
     setError(null)
 
     const supabase = createClient()
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    const { error: authError, data } = await supabase.auth.signInWithPassword({ email, password })
 
     if (authError) {
       const next = attempts + 1
       setAttempts(next)
-      if (next >= MAX_ATTEMPTS) {
-        setError('Demasiados intentos. Espera unos minutos antes de intentarlo de nuevo.')
-      } else {
-        setError('Correo o contraseña incorrectos. Inténtalo de nuevo.')
-      }
+      setError(
+        next >= MAX_ATTEMPTS
+          ? 'Demasiados intentos. Espera unos minutos antes de intentarlo de nuevo.'
+          : 'Correo o contraseña incorrectos. Inténtalo de nuevo.'
+      )
       setLoading(false)
       return
     }
 
-    router.push(redirectTo)
+    // Check role in profiles to redirect admins to the panel
+    const { data: profileRows } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', data.user.id)
+      .limit(1)
+
+    const role = (profileRows as Array<{ role: string }> | null)?.[0]?.role
+
+    router.push(role === 'admin' ? '/admin' : redirectTo)
     router.refresh()
   }
 
@@ -100,7 +109,7 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
         <button
           type="submit"
           disabled={loading || tooManyAttempts}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-white text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>

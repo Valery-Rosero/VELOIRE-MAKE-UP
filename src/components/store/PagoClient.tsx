@@ -100,7 +100,7 @@ export function PagoClient({ nequiNumber, nequiName, deliveryFee }: PagoClientPr
         <h2 className="font-body text-base font-medium text-fg mb-4">Realiza tu transferencia</h2>
 
         {/* Monto */}
-        <div className="bg-rose-light rounded-xl p-4 text-center mb-5">
+        <div className="bg-highlight rounded-xl p-4 text-center mb-5">
           <p className="font-display text-4xl text-gold mb-1">
             ${grandTotal.toLocaleString('es-CO')}
           </p>
@@ -164,7 +164,7 @@ export function PagoClient({ nequiNumber, nequiName, deliveryFee }: PagoClientPr
                 <hr className="border-rim" />
                 {items.map((item) => (
                   <div key={item.shadeId} className="flex items-center gap-3">
-                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-nude shrink-0">
+                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-alt shrink-0">
                       {item.imageUrl ? (
                         <Image
                           src={item.imageUrl}
@@ -235,7 +235,7 @@ export function PagoClient({ nequiNumber, nequiName, deliveryFee }: PagoClientPr
         <button
           onClick={handleConfirm}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-accent text-white text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>

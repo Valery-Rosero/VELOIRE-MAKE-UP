@@ -13,7 +13,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         {/* Contenido */}
         <div className="relative z-10 text-center">
-          <h1 className="font-display text-6xl text-white mb-4 leading-tight">Vèloire</h1>
+          <h1 className="font-display text-6xl text-white mb-4 leading-tight">VÈLOIRE</h1>
           <p className="font-body text-sm text-white/80 leading-relaxed max-w-56">
             Maquillaje hecho para ti, pensado en Pasto.
           </p>

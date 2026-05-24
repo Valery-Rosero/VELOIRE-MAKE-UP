@@ -27,7 +27,7 @@ export function ProductGallery({ images, shadeImageUrl, productName }: ProductGa
   return (
     <div className="space-y-3">
       {/* Main image with crossfade */}
-      <div className="relative aspect-square rounded-2xl overflow-hidden bg-nude">
+      <div className="relative aspect-square rounded-2xl overflow-hidden bg-alt">
         {activeUrl ? (
           <AnimatePresence mode="sync">
             <motion.div

@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, type FormEvent, type ChangeEvent } from 'react'
+import { useState, type ChangeEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Loader2 } from 'lucide-react'
+import { Loader2, MailCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Input } from '@/components/ui/Input'
 import { PasswordInput } from './PasswordInput'
@@ -39,6 +39,8 @@ export function RegisterForm() {
   const [loading, setLoading] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
   const [duplicateEmail, setDuplicateEmail] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [registeredEmail, setRegisteredEmail] = useState('')
 
   const errors = validate(form)
   const visibleErrors: FormErrors = Object.fromEntries(
@@ -55,7 +57,7 @@ export function RegisterForm() {
     setTouched((prev) => ({ ...prev, [e.target.name]: true }))
   }
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: { preventDefault(): void; currentTarget: HTMLFormElement }) {
     e.preventDefault()
     setTouched({ name: true, email: true, password: true, confirm: true })
     if (Object.keys(errors).length > 0) return
@@ -76,15 +78,54 @@ export function RegisterForm() {
     if (error) {
       if (error.message.toLowerCase().includes('already registered') || error.status === 422) {
         setDuplicateEmail(true)
+      } else if (error.status === 429) {
+        setServerError('Demasiados intentos. Espera unos minutos antes de intentarlo de nuevo.')
       } else {
-        setServerError('Ocurrió un error al crear tu cuenta. Inténtalo de nuevo.')
+        setServerError('Ocurrió un error al crear tu cuenta. Inténtalo más tarde.')
       }
       setLoading(false)
       return
     }
 
-    router.push('/')
-    router.refresh()
+    setRegisteredEmail(form.email)
+    setSent(true)
+    setLoading(false)
+  }
+
+  if (sent) {
+    return (
+      <div className="text-center">
+        <div className="flex justify-center mb-5">
+          <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center">
+            <MailCheck size={30} className="text-accent" />
+          </div>
+        </div>
+
+        <h1 className="font-display text-[26px] text-fg leading-snug mb-2">
+          Revisa tu correo
+        </h1>
+        <p className="font-body text-sm text-fg-2 mb-1">
+          Te enviamos un correo de verificación a
+        </p>
+        <p className="font-body text-sm font-medium text-fg mb-6">
+          {registeredEmail}
+        </p>
+        <p className="font-body text-sm text-fg-2 mb-8 leading-relaxed">
+          Haz clic en el enlace del correo para activar tu cuenta y luego inicia sesión.
+        </p>
+
+        <button
+          onClick={() => router.push('/login')}
+          className="w-full py-3 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity"
+        >
+          Ir a iniciar sesión
+        </button>
+
+        <p className="font-body text-xs text-fg-3 mt-4">
+          ¿No llegó el correo? Revisa la carpeta de spam.
+        </p>
+      </div>
+    )
   }
 
   return (
@@ -171,7 +212,7 @@ export function RegisterForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-white text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>

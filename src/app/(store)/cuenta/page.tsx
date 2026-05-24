@@ -95,7 +95,7 @@ export default async function CuentaPage() {
             <p className="font-body text-sm text-fg-2 mb-4">Aún no tienes pedidos.</p>
             <Link
               href="/catalogo"
-              className="inline-flex px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-body font-medium hover:opacity-90 transition-opacity"
+              className="inline-flex px-5 py-2.5 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity"
             >
               Explorar productos
             </Link>

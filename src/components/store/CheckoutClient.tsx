@@ -141,7 +141,7 @@ export function CheckoutClient({ deliveryFee, prefilledData, hasSession }: Check
           <h2 className="font-display text-xl text-fg mb-5">Datos de envío</h2>
 
           {hasSession && prefilledData && (
-            <p className="text-xs font-body text-fg-3 bg-rose-light text-accent px-3 py-2 rounded-lg mb-5">
+            <p className="text-xs font-body text-fg-3 bg-highlight px-3 py-2 rounded-lg mb-5">
               Datos precargados de tu cuenta. Puedes editarlos.
             </p>
           )}
@@ -244,7 +244,7 @@ export function CheckoutClient({ deliveryFee, prefilledData, hasSession }: Check
             <button
               type="submit"
               disabled={!isFormValid}
-              className="w-full py-3.5 rounded-xl bg-accent text-white text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed mt-2"
+              className="w-full py-3.5 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed mt-2"
             >
               Continuar al pago
             </button>
@@ -258,7 +258,7 @@ export function CheckoutClient({ deliveryFee, prefilledData, hasSession }: Check
           <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
             {items.map((item) => (
               <div key={item.shadeId} className="flex items-center gap-3">
-                <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-nude shrink-0">
+                <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-alt shrink-0">
                   {item.imageUrl ? (
                     <Image
                       src={item.imageUrl}

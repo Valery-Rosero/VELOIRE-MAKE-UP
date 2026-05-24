@@ -84,8 +84,8 @@ export async function saveProduct(data: SaveProductInput): Promise<{ error?: str
   if (existingShades.length > 0) {
     await supabase.from('product_shades').upsert(
       existingShades.map((s) => ({
-        id: s.id,
-        product_id: productId,
+        id: s.id!,
+        product_id: productId!,
         name: s.name,
         hex_color: s.hex_color,
         stock: s.stock,
@@ -99,7 +99,7 @@ export async function saveProduct(data: SaveProductInput): Promise<{ error?: str
   if (newShades.length > 0) {
     await supabase.from('product_shades').insert(
       newShades.map((s, i) => ({
-        product_id: productId,
+        product_id: productId!,
         name: s.name,
         hex_color: s.hex_color,
         stock: s.stock,
@@ -115,7 +115,7 @@ export async function saveProduct(data: SaveProductInput): Promise<{ error?: str
   if (data.images.length > 0) {
     await supabase.from('product_images').insert(
       data.images.map((img) => ({
-        product_id: productId,
+        product_id: productId!,
         url: img.url,
         alt_text: img.alt_text || null,
         is_main: img.is_main,

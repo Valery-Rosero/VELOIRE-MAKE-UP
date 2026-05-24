@@ -55,6 +55,7 @@ export function ProductActions({
       imageUrl,
       unitPrice: price,
       quantity: qty,
+      stock: selectedShade.stock,
     })
 
     setAdded(true)
@@ -108,7 +109,7 @@ export function ProductActions({
               ? 'bg-alt text-fg-3 cursor-not-allowed'
               : added
               ? 'bg-success text-white'
-              : 'bg-accent text-white hover:opacity-90'
+              : 'bg-noir text-beige hover:opacity-90'
           }`}
         >
           <AnimatePresence mode="wait" initial={false}>
@@ -152,7 +153,7 @@ export function ProductActions({
             >
               <Link
                 href="/carrito"
-                className="block w-full text-center py-3 rounded-xl border border-accent text-accent text-sm font-body font-medium hover:bg-rose-light transition-colors duration-150"
+                className="block w-full text-center py-3 rounded-xl border border-rim text-accent text-sm font-body font-medium hover:bg-highlight transition-colors duration-150"
               >
                 Ver carrito
               </Link>

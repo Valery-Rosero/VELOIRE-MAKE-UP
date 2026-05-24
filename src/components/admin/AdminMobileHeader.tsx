@@ -1,7 +1,8 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { Menu, Bell } from 'lucide-react'
+import { Menu, Sun, Moon } from 'lucide-react'
+import { useTheme } from 'next-themes'
 
 const SECTION_TITLES: Array<{ prefix: string; label: string; exact?: boolean }> = [
   { prefix: '/admin', label: 'Dashboard', exact: true },
@@ -24,6 +25,7 @@ interface Props {
 
 export function AdminMobileHeader({ onMenuClick }: Props) {
   const pathname = usePathname()
+  const { resolvedTheme, setTheme } = useTheme()
   return (
     <header className="sticky top-0 z-40 bg-card border-b border-rim px-4 py-3 flex items-center justify-between">
       <button
@@ -37,10 +39,11 @@ export function AdminMobileHeader({ onMenuClick }: Props) {
         {getTitle(pathname)}
       </h1>
       <button
-        aria-label="Notificaciones"
-        className="p-2 -mr-2 rounded-lg text-fg-3 hover:text-fg-2 transition-colors"
+        onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+        aria-label="Cambiar tema"
+        className="p-2 -mr-2 rounded-lg text-fg-2 hover:text-fg hover:bg-highlight transition-colors"
       >
-        <Bell size={20} />
+        {resolvedTheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
       </button>
     </header>
   )

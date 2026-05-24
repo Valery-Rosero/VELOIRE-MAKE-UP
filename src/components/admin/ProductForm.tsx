@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Plus, Pencil, Trash2, Loader2, Check } from 'lucide-react'
 import { saveProduct, type SaveProductInput } from '@/app/admin/productos/actions'
@@ -334,7 +335,7 @@ export function ProductForm({ categories, initialData }: Props) {
           {mainImageUrl ? (
             <div className="flex items-start gap-3">
               <div className="relative w-32 h-32 rounded-xl overflow-hidden border border-rim shrink-0">
-                <img src={mainImageUrl} alt="Principal" className="w-full h-full object-cover" />
+                <Image src={mainImageUrl} alt="Principal" fill className="object-cover" />
               </div>
               <button
                 type="button"
@@ -359,7 +360,7 @@ export function ProductForm({ categories, initialData }: Props) {
           <div className="grid grid-cols-4 gap-2">
             {galleryImages.map((img) => (
               <div key={img.url} className="relative aspect-square rounded-xl overflow-hidden border border-rim group">
-                <img src={img.url} alt="" className="w-full h-full object-cover" />
+                <Image src={img.url} alt="" fill className="object-cover" />
                 <button
                   type="button"
                   onClick={() => removeImage(img.url)}
@@ -526,7 +527,7 @@ export function ProductForm({ categories, initialData }: Props) {
                     type="button"
                     onClick={saveShade}
                     disabled={!shadeForm.data.name.trim()}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-accent text-white text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                   >
                     <Check size={14} />
                     Guardar tono
@@ -595,7 +596,7 @@ export function ProductForm({ categories, initialData }: Props) {
           type="button"
           onClick={() => handleSave('active')}
           disabled={isPending || shades.length === 0}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           title={shades.length === 0 ? 'Añade al menos un tono para publicar' : undefined}
         >
           {isPending && <Loader2 size={14} className="animate-spin" />}

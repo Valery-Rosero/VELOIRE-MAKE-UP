@@ -18,7 +18,7 @@ export default function CarritoPage() {
         </p>
         <Link
           href="/catalogo"
-          className="inline-flex items-center px-6 py-3 rounded-xl bg-accent text-white text-sm font-body font-medium hover:opacity-90 transition-opacity"
+          className="inline-flex items-center px-6 py-3 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity"
         >
           Ver catálogo
         </Link>
@@ -125,7 +125,7 @@ export default function CarritoPage() {
 
           <Link
             href="/checkout"
-            className="block w-full text-center py-3.5 rounded-xl bg-accent text-white text-sm font-body font-medium hover:opacity-90 transition-opacity"
+            className="block w-full text-center py-3.5 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity"
           >
             Ir al checkout
           </Link>

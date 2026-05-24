@@ -53,7 +53,7 @@ export function OrderStatusUpdater({ orderId, currentStatus }: Props) {
           disabled={isPending}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-body font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
             BUTTON_STYLES[status] ??
-            'bg-accent text-white hover:opacity-90'
+            'bg-noir text-beige hover:opacity-90'
           }`}
         >
           {isPending && <Loader2 size={13} className="animate-spin" />}

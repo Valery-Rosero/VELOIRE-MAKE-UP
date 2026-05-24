@@ -1,4 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { createAdminClient } from '@/lib/supabase/server'
+import type { NotificationType } from '@/types/database'
+
+const VALID_TYPES: NotificationType[] = [
+  'order_confirmation',
+  'payment_confirmed',
+  'order_shipped',
+  'order_delivered',
+]
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}))
@@ -8,9 +17,29 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'orderId y type son requeridos.' }, { status: 400 })
   }
 
-  // Email sending would be implemented here (Resend, SendGrid, etc.)
-  // For now, log and acknowledge.
-  console.log(`[notifications] type=${type} orderId=${orderId}`)
+  if (!VALID_TYPES.includes(type as NotificationType)) {
+    return NextResponse.json({ error: 'Tipo de notificación inválido.' }, { status: 400 })
+  }
+
+  const supabase = await createAdminClient()
+
+  const { data: orderRows } = await supabase
+    .from('orders')
+    .select('customer_email')
+    .eq('id', orderId)
+    .limit(1)
+
+  const customerEmail = (orderRows as Array<{ customer_email: string }> | null)?.[0]?.customer_email
+  if (!customerEmail) {
+    return NextResponse.json({ error: 'Pedido no encontrado.' }, { status: 404 })
+  }
+
+  await supabase.from('email_notifications').insert({
+    order_id: orderId,
+    type: type as NotificationType,
+    recipient_email: customerEmail,
+    status: 'pending',
+  })
 
   return NextResponse.json({ success: true })
 }

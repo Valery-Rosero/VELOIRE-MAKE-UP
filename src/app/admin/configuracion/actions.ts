@@ -7,7 +7,6 @@ export async function updateConfig(key: string, value: string) {
   const supabase = await createAdminClient()
   await supabase
     .from('store_config')
-    .update({ value })
-    .eq('key', key)
+    .upsert({ key, value }, { onConflict: 'key' })
   revalidatePath('/admin/configuracion')
 }

@@ -22,7 +22,7 @@ export function ProductGrid({ products, filterKey }: ProductGridProps) {
         </p>
         <Link
           href="/catalogo"
-          className="inline-flex items-center mt-6 px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-body font-medium hover:opacity-90 transition-opacity"
+          className="inline-flex items-center mt-6 px-5 py-2.5 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity"
         >
           Ver todos los productos
         </Link>
