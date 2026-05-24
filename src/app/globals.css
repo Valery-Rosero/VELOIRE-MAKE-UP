@@ -9,9 +9,7 @@
 }
 
 /* ─── Clase dark via next-themes (attribute="class") ─── */
-@custom-variant dark {
-  &:where(.dark, .dark *);
-}
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ─── Variables de tema ─── */
 :root {
