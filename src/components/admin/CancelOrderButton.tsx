@@ -41,7 +41,7 @@ export function CancelOrderButton({ orderId }: Props) {
           <>
             <motion.div
               key="cancel-bg"
-              className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 z-100 bg-black/60 backdrop-blur-sm"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -49,7 +49,7 @@ export function CancelOrderButton({ orderId }: Props) {
             />
             <motion.div
               key="cancel-modal"
-              className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none"
+              className="fixed inset-0 z-101 flex items-center justify-center p-4 pointer-events-none"
               initial={{ opacity: 0, scale: 0.94, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.94, y: 10 }}
