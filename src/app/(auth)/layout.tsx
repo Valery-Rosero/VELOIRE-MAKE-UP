@@ -7,14 +7,14 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       {/* ─ Columna decorativa (solo desktop) ─ */}
       <div className="hidden md:flex md:w-[40%] flex-col items-center justify-center relative overflow-hidden p-12 bg-[#D4537E]">
         {/* Círculos decorativos de textura */}
-        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-[#993556]/25 pointer-events-none" />
-        <div className="absolute -bottom-16 -right-16 w-72 h-72 rounded-full bg-[#993556]/20 pointer-events-none" />
-        <div className="absolute top-1/3 -right-8 w-40 h-40 rounded-full bg-[#993556]/15 pointer-events-none" />
+        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-noir/25 pointer-events-none" />
+        <div className="absolute -bottom-16 -right-16 w-72 h-72 rounded-full bg-noir/75 pointer-events-none" />
+        <div className="absolute top-1/3 -right-8 w-40 h-40 rounded-full bg-noir/50 pointer-events-none" />
 
         {/* Contenido */}
         <div className="relative z-10 text-center">
-          <h1 className="font-display text-6xl text-white mb-4 leading-tight">VÈLOIRE</h1>
-          <p className="font-body text-sm text-white/80 leading-relaxed max-w-56">
+          <h1 className="font-display text-6xl text-noir mb-4 leading-tight">VÈLOIRE</h1>
+          <p className="font-body text-sm text-noir leading-relaxed max-w-56">
             Maquillaje hecho para ti, pensado en Pasto.
           </p>
         </div>

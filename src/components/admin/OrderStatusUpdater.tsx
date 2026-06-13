@@ -15,9 +15,9 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 }
 
 const NEXT_STATUSES: Record<OrderStatus, OrderStatus[]> = {
-  pending_payment: ['paid', 'cancelled'],
-  paid: ['preparing', 'cancelled'],
-  preparing: ['shipped', 'cancelled'],
+  pending_payment: ['paid'],
+  paid: ['preparing'],
+  preparing: ['shipped'],
   shipped: ['delivered'],
   delivered: [],
   cancelled: [],

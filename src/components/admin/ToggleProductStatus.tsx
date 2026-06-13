@@ -22,7 +22,7 @@ export function ToggleProductStatus({ productId, currentStatus }: Props) {
   return (
     <button
       onClick={handleToggle}
-      disabled={isPending || currentStatus === 'draft'}
+      disabled={isPending}
       className="text-xs font-body text-fg-2 hover:text-fg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
     >
       {isPending ? '...' : label}

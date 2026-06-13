@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ProductCard } from '@/components/store/ProductCard'
 import { HeroSection } from '@/components/store/HeroSection'
 import { CategoryCards } from '@/components/store/CategoryCards'
+import { type CarouselProduct } from '@/components/store/NewArrivalsCarousel'
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
@@ -36,6 +37,29 @@ async function getCategories(): Promise<Category[]> {
       .eq('is_active', true)
       .order('sort_order')
     return data ?? []
+  } catch {
+    return []
+  }
+}
+
+async function getNewProducts(): Promise<CarouselProduct[]> {
+  try {
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from('products')
+      .select(`
+        id, slug, name, price, compare_price,
+        product_images(url, alt_text, is_main),
+        product_shades(id, hex_color, is_active, stock),
+        categories(name)
+      `)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(12)
+    const products = (data as unknown as CarouselProduct[]) ?? []
+    return products.filter((p) =>
+      p.product_shades?.some((s) => s.is_active && s.stock > 0) ?? false
+    )
   } catch {
     return []
   }
@@ -200,16 +224,17 @@ function ValueBanner() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function HomePage() {
-  const [categories, products] = await Promise.all([
+  const [categories, newProducts, featuredProducts] = await Promise.all([
     getCategories(),
+    getNewProducts(),
     getFeaturedProducts(),
   ])
 
   return (
     <>
-      <HeroSection />
+      <HeroSection products={newProducts} />
       <CategoriesSection categories={categories} />
-      <FeaturedSection products={products} />
+      <FeaturedSection products={featuredProducts} />
       <ValueBanner />
     </>
   )

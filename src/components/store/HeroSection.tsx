@@ -1,8 +1,13 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowRight } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import type { CarouselProduct } from '@/components/store/NewArrivalsCarousel'
+
+// ─── Bolitas (fallback cuando no hay productos) ───────────────────────────────
 
 const CIRCLES = [
   { color: '#8B2252', size: 220, top: '-5%',  left: '18%', delay: 0.2, dur: 4.0, float: 16, blur: '3px',  z: 1 },
@@ -15,7 +20,103 @@ const CIRCLES = [
   { color: '#f5e1d3', size: 44,  top: '38%',  left: '78%', delay: 0.3, dur: 3.7, float: 8,  blur: '0px',  z: 5 },
 ] as const
 
-export function HeroSection() {
+// ─── Spotlight de producto ────────────────────────────────────────────────────
+
+function ProductSpotlight({ products }: { products: CarouselProduct[] }) {
+  const [idx, setIdx] = useState(0)
+  const [dir, setDir] = useState(1)
+
+  useEffect(() => {
+    if (products.length <= 1) return
+    const t = setInterval(() => {
+      setDir(1)
+      setIdx((i) => (i + 1) % products.length)
+    }, 4500)
+    return () => clearInterval(t)
+  }, [products.length])
+
+  const go = (next: number) => {
+    setDir(next > idx ? 1 : -1)
+    setIdx(next)
+  }
+
+  const p = products[idx]
+  const img = p.product_images?.find((x) => x.is_main) ?? p.product_images?.[0]
+
+  return (
+    <div className="relative w-full h-full">
+      <AnimatePresence mode="wait" custom={dir}>
+        <motion.div
+          key={p.id}
+          custom={dir}
+          variants={{
+            enter: (d: number) => ({ x: d * 24, opacity: 0, scale: 0.97 }),
+            center: { x: 0, opacity: 1, scale: 1 },
+            exit: (d: number) => ({ x: d * -24, opacity: 0, scale: 0.97 }),
+          }}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
+          className="absolute inset-0"
+        >
+          <Link href={`/producto/${p.slug}`} className="group block h-full">
+            <div className="relative h-full rounded-3xl overflow-hidden bg-alt shadow-xl">
+              {/* Imagen */}
+              {img ? (
+                <Image
+                  src={img.url}
+                  alt={img.alt_text ?? p.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 45vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                  priority
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-alt">
+                  <span className="font-display text-7xl text-accent select-none">V</span>
+                </div>
+              )}
+
+              {/* Badge "Nuevo" */}
+              <div className="absolute top-4 right-4">
+                <span className="px-3 py-1 rounded-full bg-accent text-white text-[10px] font-body font-semibold tracking-widest uppercase">
+                  Nuevo
+                </span>
+              </div>
+            </div>
+          </Link>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Dots de navegación */}
+      {products.length > 1 && (
+        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5">
+          {products.map((_, i) => (
+            <button
+              key={i}
+              onClick={(e) => { e.preventDefault(); go(i) }}
+              aria-label={`Producto ${i + 1}`}
+              className={`h-1 rounded-full transition-all duration-300 cursor-pointer ${
+                i === idx ? 'w-5 bg-white' : 'w-1.5 bg-white/35 hover:bg-white/65'
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Hero ─────────────────────────────────────────────────────────────────────
+
+interface HeroSectionProps {
+  products?: CarouselProduct[]
+}
+
+export function HeroSection({ products = [] }: HeroSectionProps) {
+  const hasProducts = products.length > 0
+
   return (
     <section
       className="relative min-h-[calc(100vh-64px)] flex items-center overflow-hidden"
@@ -27,28 +128,21 @@ export function HeroSection() {
         `,
       }}
     >
-      {/* Mancha decorativa grande — fondo */}
+      {/* Manchas decorativas de fondo */}
       <div
         className="absolute pointer-events-none"
         style={{
-          width: 680,
-          height: 680,
-          borderRadius: '50%',
+          width: 680, height: 680, borderRadius: '50%',
           background: 'radial-gradient(circle, rgba(192,143,162,0.09) 0%, transparent 70%)',
-          right: '-10%',
-          top: '50%',
-          transform: 'translateY(-50%)',
+          right: '-10%', top: '50%', transform: 'translateY(-50%)',
         }}
       />
       <div
         className="absolute pointer-events-none"
         style={{
-          width: 300,
-          height: 300,
-          borderRadius: '50%',
+          width: 300, height: 300, borderRadius: '50%',
           background: 'radial-gradient(circle, rgba(165,101,131,0.07) 0%, transparent 70%)',
-          left: '-6%',
-          top: '-8%',
+          left: '-6%', top: '-8%',
         }}
       />
 
@@ -62,7 +156,6 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.65, ease: 'easeOut' }}
           >
-            {/* Eyebrow */}
             <p
               className="font-body text-[11px] uppercase text-accent mb-5"
               style={{ letterSpacing: '3px' }}
@@ -70,7 +163,6 @@ export function HeroSection() {
               Hecho en Pasto, Nariño
             </p>
 
-            {/* Título — 3 líneas intencionadas */}
             <h1 className="font-display leading-[1.08] tracking-tight mb-6">
               <span className="block text-4xl md:text-5xl lg:text-[62px] text-fg">El maquillaje</span>
               <span className="block text-4xl md:text-5xl lg:text-[62px] text-fg">que te hace</span>
@@ -80,16 +172,13 @@ export function HeroSection() {
               </span>
             </h1>
 
-            {/* Separador fino */}
             <div className="hidden md:block w-10 h-0.5 bg-accent mb-5" />
 
-            {/* Subtítulo */}
             <p className="font-body text-[15px] text-fg-2 max-w-sm leading-[1.75] mb-8">
               Encuentra tu tono perfecto entre nuestra colección artesanal.
               Hecho para todas.
             </p>
 
-            {/* Botones */}
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
                 href="/catalogo"
@@ -107,32 +196,37 @@ export function HeroSection() {
             </div>
           </motion.div>
 
-          {/* ── Columna derecha — círculos flotantes ── */}
-          <div className="relative h-64 md:h-125 overflow-hidden md:overflow-visible order-first md:order-last">
-            {CIRCLES.map((c, i) => (
-              <motion.div
-                key={i}
-                className="absolute rounded-full"
-                style={{
-                  width: c.size,
-                  height: c.size,
-                  top: c.top,
-                  left: c.left,
-                  backgroundColor: c.color,
-                  filter: `blur(${c.blur})`,
-                  zIndex: c.z,
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.13)',
-                }}
-                animate={{ y: [0, -c.float, 0] }}
-                transition={{
-                  duration: c.dur,
-                  repeat: Infinity,
-                  delay: c.delay,
-                  ease: 'easeInOut',
-                }}
-              />
-            ))}
-          </div>
+          {/* ── Columna derecha ── */}
+          <motion.div
+            className="relative h-72 md:h-130 overflow-hidden order-first md:order-last"
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, ease: 'easeOut', delay: 0.15 }}
+          >
+            {hasProducts ? (
+              <ProductSpotlight products={products} />
+            ) : (
+              /* Bolitas originales como fallback */
+              <>
+                {CIRCLES.map((c, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute rounded-full"
+                    style={{
+                      width: c.size, height: c.size,
+                      top: c.top, left: c.left,
+                      backgroundColor: c.color,
+                      filter: `blur(${c.blur})`,
+                      zIndex: c.z,
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.13)',
+                    }}
+                    animate={{ y: [0, -c.float, 0] }}
+                    transition={{ duration: c.dur, repeat: Infinity, delay: c.delay, ease: 'easeInOut' }}
+                  />
+                ))}
+              </>
+            )}
+          </motion.div>
 
         </div>
       </div>

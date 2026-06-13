@@ -71,8 +71,15 @@ export function PagoClient({ nequiNumber, nequiName, deliveryFee }: PagoClientPr
       })
 
       if (!res.ok) {
-        const { error } = await res.json().catch(() => ({ error: 'Error desconocido' }))
-        throw new Error(error ?? 'No se pudo crear el pedido')
+        const body = await res.json().catch(() => ({ error: 'Error desconocido' }))
+        if (res.status === 409 && body.error === 'stock_insuficiente') {
+          setErrorMsg(
+            `"${body.productName} — ${body.shadeName}" ya no está disponible (quedan ${body.available ?? 0} unidades). Por favor actualiza tu carrito antes de continuar.`
+          )
+          setLoading(false)
+          return
+        }
+        throw new Error(body.error ?? 'No se pudo crear el pedido')
       }
 
       const { orderNumber } = await res.json()

@@ -12,7 +12,6 @@ export async function POST(request: NextRequest) {
     const body: OrderBody = await request.json()
     const { items, ...formData } = body
 
-    // Validate form data
     const parsed = checkoutSchema.safeParse(formData)
     if (!parsed.success) {
       return NextResponse.json(
@@ -28,10 +27,39 @@ export async function POST(request: NextRequest) {
     const data = parsed.data
     const subtotal = items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0)
 
-    // Use admin client — bypasses RLS
     const supabase = await createAdminClient()
 
-    // Read delivery_fee from store_config (source of truth)
+    // ── Validar y descontar stock ──────────────────────────────────────────────
+
+    const shadeIds = items.map((i) => i.shadeId).filter(Boolean)
+
+    const { data: shades, error: shadesError } = await supabase
+      .from('product_shades')
+      .select('id, stock, name')
+      .in('id', shadeIds)
+
+    if (shadesError) throw shadesError
+
+    const stockMap = new Map((shades ?? []).map((s) => [s.id, s.stock]))
+
+    // Verificar disponibilidad antes de crear nada
+    for (const item of items) {
+      const available = stockMap.get(item.shadeId) ?? 0
+      if (available < item.quantity) {
+        return NextResponse.json(
+          {
+            error: 'stock_insuficiente',
+            productName: item.productName,
+            shadeName: item.shadeName,
+            available,
+          },
+          { status: 409 }
+        )
+      }
+    }
+
+    // ── Delivery fee ──────────────────────────────────────────────────────────
+
     const { data: feeRows } = await supabase
       .from('store_config')
       .select('value')
@@ -44,12 +72,12 @@ export async function POST(request: NextRequest) {
 
     const totalAmount = subtotal + delivery_fee
 
-    // Generate order number
+    // ── Crear pedido ──────────────────────────────────────────────────────────
+
     const { data: orderNumberData, error: rpcError } = await supabase.rpc('generate_order_number')
     if (rpcError) throw rpcError
     const orderNumber: string = orderNumberData
 
-    // Create order
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const orderInsert: any = {
       order_number: orderNumber,
@@ -78,7 +106,8 @@ export async function POST(request: NextRequest) {
     const orderId = (orderRows as Array<{ id: string }> | null)?.[0]?.id
     if (!orderId) throw new Error('No se pudo obtener el ID del pedido')
 
-    // Insert order items
+    // ── Insertar items ────────────────────────────────────────────────────────
+
     const orderItems = items.map((item) => ({
       order_id: orderId,
       product_id: item.productId,
@@ -97,6 +126,19 @@ export async function POST(request: NextRequest) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .insert(orderItems as any)
     if (itemsError) throw itemsError
+
+    // ── Descontar stock (después de confirmar el pedido creado) ───────────────
+
+    await Promise.all(
+      items.map(async (item) => {
+        if (!item.shadeId) return
+        const current = stockMap.get(item.shadeId) ?? 0
+        await supabase
+          .from('product_shades')
+          .update({ stock: current - item.quantity })
+          .eq('id', item.shadeId)
+      })
+    )
 
     return NextResponse.json({ orderNumber }, { status: 201 })
   } catch (err) {

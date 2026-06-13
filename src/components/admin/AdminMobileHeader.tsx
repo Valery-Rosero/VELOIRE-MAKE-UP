@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import { Menu, Sun, Moon } from 'lucide-react'
-import { useTheme } from 'next-themes'
+import { useTheme } from '@/components/ui/ThemeProvider'
 
 const SECTION_TITLES: Array<{ prefix: string; label: string; exact?: boolean }> = [
   { prefix: '/admin', label: 'Dashboard', exact: true },

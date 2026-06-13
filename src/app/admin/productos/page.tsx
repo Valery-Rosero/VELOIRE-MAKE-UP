@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Plus } from 'lucide-react'
+import { Plus, FileSpreadsheet } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/server'
 import { formatPrice } from '@/lib/format'
 import { ToggleProductStatus } from '@/components/admin/ToggleProductStatus'
@@ -68,13 +68,23 @@ export default async function ProductosAdminPage({ searchParams }: PageProps) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-2xl text-fg">Productos</h1>
-        <Link
-          href="/admin/productos/nuevo"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity"
-        >
-          <Plus size={15} />
-          Nuevo producto
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/productos/pedido-proveedor"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-rim text-fg-2 text-sm font-body font-medium hover:bg-alt transition-colors"
+          >
+            <FileSpreadsheet size={15} />
+            <span className="hidden sm:inline">Pedido de proveedor</span>
+            <span className="sm:hidden">Excel</span>
+          </Link>
+          <Link
+            href="/admin/productos/nuevo"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity"
+          >
+            <Plus size={15} />
+            Nuevo producto
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}

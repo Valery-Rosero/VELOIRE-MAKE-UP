@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { OrderStatusUpdater } from '@/components/admin/OrderStatusUpdater'
 import { ConfirmPaymentButton } from '@/components/admin/ConfirmPaymentButton'
 import { CancelOrderButton } from '@/components/admin/CancelOrderButton'
+import { DeleteOrderButton } from '@/components/admin/DeleteOrderButton'
 import { formatPrice, formatDate } from '@/lib/format'
 import type { OrderStatus } from '@/types/database'
 
@@ -126,25 +127,44 @@ export default async function DetallePedidoPage({ params }: PageProps) {
 
       {/* Status actions */}
       <div className="mb-4 space-y-3">
-        {order.status === 'pending_payment' ? (
+        {order.status === 'pending_payment' && (
+          <ConfirmPaymentButton
+            orderId={order.id}
+            orderNumber={order.order_number}
+            total={order.total}
+            customerEmail={order.customer_email}
+          />
+        )}
+
+        {order.status !== 'cancelled' && order.status !== 'delivered' && (
           <>
-            <ConfirmPaymentButton
-              orderId={order.id}
-              orderNumber={order.order_number}
-              total={order.total}
-              customerEmail={order.customer_email}
-            />
+            {order.status !== 'pending_payment' && (
+              <div className="bg-card border border-rim rounded-2xl p-5">
+                <p className="font-body text-sm font-medium text-fg mb-3">Actualizar estado</p>
+                <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />
+              </div>
+            )}
             <div className="bg-card border border-rim rounded-2xl p-5">
-              <p className="font-body text-sm font-medium text-fg mb-3">Cancelar pedido</p>
+              <p className="font-body text-sm font-medium text-fg mb-1">
+                {order.status === 'pending_payment' ? 'Rechazar pedido' : 'Cancelar pedido'}
+              </p>
+              <p className="font-body text-xs text-fg-3 mb-3">
+                Se restaurará el stock de los productos.
+              </p>
               <CancelOrderButton orderId={order.id} />
             </div>
           </>
-        ) : order.status !== 'cancelled' ? (
+        )}
+
+        {order.status === 'cancelled' && (
           <div className="bg-card border border-rim rounded-2xl p-5">
-            <p className="font-body text-sm font-medium text-fg mb-3">Actualizar estado</p>
-            <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />
+            <p className="font-body text-sm font-medium text-fg mb-1">Eliminar pedido</p>
+            <p className="font-body text-xs text-fg-3 mb-3">
+              Elimina permanentemente este pedido de la base de datos.
+            </p>
+            <DeleteOrderButton orderId={order.id} />
           </div>
-        ) : null}
+        )}
       </div>
 
       {/* Timeline from order_status_history */}
