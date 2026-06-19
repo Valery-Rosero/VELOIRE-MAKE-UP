@@ -3,7 +3,7 @@
 import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { ShoppingBag } from 'lucide-react'
+import { ShoppingBag, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { useCartStore } from '@/lib/store/cart'
 import { checkoutFormSchema, type CheckoutFormData } from '@/lib/validations/checkout'
@@ -58,6 +58,7 @@ export function CheckoutClient({ deliveryFee, prefilledData, hasSession }: Check
   })
   const [errors, setErrors] = useState<Partial<Record<FormFields, string>>>({})
   const [touched, setTouched] = useState<Set<FormFields>>(new Set())
+  const [summaryOpen, setSummaryOpen] = useState(false)
 
   // Redirect to catálogo if cart becomes empty
   useEffect(() => {
@@ -127,13 +128,64 @@ export function CheckoutClient({ deliveryFee, prefilledData, hasSession }: Check
   }).success
 
   return (
-    <main className="max-w-5xl mx-auto px-4 py-10">
+    <main className="max-w-5xl mx-auto px-4 py-10 pb-22 lg:pb-10">
       {/* Header */}
       <div className="mb-8">
         <h1 className="font-display text-3xl text-fg">Finalizar pedido</h1>
       </div>
 
       <CheckoutProgress step={1} />
+
+      {/* ── Resumen colapsable — solo mobile ── */}
+      <div className="lg:hidden mb-6 bg-card border border-rim rounded-2xl overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setSummaryOpen((o) => !o)}
+          className="w-full flex items-center justify-between px-4 py-3.5 text-sm font-body"
+        >
+          <span className="text-fg-2">Resumen del pedido</span>
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-gold">${grandTotal.toLocaleString('es-CO')}</span>
+            <ChevronDown
+              size={16}
+              className={`text-fg-3 transition-transform duration-200 ${summaryOpen ? 'rotate-180' : ''}`}
+            />
+          </div>
+        </button>
+        {summaryOpen && (
+          <div className="px-4 pb-4 border-t border-rim space-y-3 pt-3">
+            <div className="space-y-3 max-h-48 overflow-y-auto">
+              {items.map((item) => (
+                <div key={item.shadeId} className="flex items-center gap-3">
+                  <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-alt shrink-0">
+                    {item.imageUrl ? (
+                      <Image src={item.imageUrl} alt={item.productName} fill sizes="40px" className="object-cover" />
+                    ) : (
+                      <span className="w-full h-full flex items-center justify-center">
+                        <span className="w-4 h-4 rounded-full" style={{ backgroundColor: item.shadeHex }} />
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-body text-xs font-medium text-fg truncate">{item.productName}</p>
+                    <p className="font-body text-[11px] text-fg-3">× {item.quantity} · {item.shadeName}</p>
+                  </div>
+                  <p className="font-body text-xs font-medium text-fg shrink-0">
+                    ${(item.unitPrice * item.quantity).toLocaleString('es-CO')}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <hr className="border-rim" />
+            <div className="flex justify-between text-sm font-body text-fg-2">
+              <span>Subtotal</span><span>${subtotal.toLocaleString('es-CO')}</span>
+            </div>
+            <div className="flex justify-between text-sm font-body text-fg-2">
+              <span>Domicilio</span><span>${deliveryFee.toLocaleString('es-CO')}</span>
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
         {/* ─ Formulario ─ */}
@@ -146,7 +198,7 @@ export function CheckoutClient({ deliveryFee, prefilledData, hasSession }: Check
             </p>
           )}
 
-          <form onSubmit={handleSubmit} noValidate className="space-y-4">
+          <form id="checkout-form" onSubmit={handleSubmit} noValidate className="space-y-4">
             <Input
               name="customer_name"
               label="Nombre completo"
@@ -241,10 +293,11 @@ export function CheckoutClient({ deliveryFee, prefilledData, hasSession }: Check
               </div>
             </div>
 
+            {/* Submit — solo visible en desktop; en mobile es el botón sticky */}
             <button
               type="submit"
               disabled={!isFormValid}
-              className="w-full py-3.5 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed mt-2"
+              className="hidden lg:block w-full py-3.5 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed mt-2"
             >
               Continuar al pago
             </button>
@@ -317,6 +370,18 @@ export function CheckoutClient({ deliveryFee, prefilledData, hasSession }: Check
             </Link>
           </div>
         </div>
+      </div>
+
+      {/* ── Botón sticky en mobile ── */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 px-4 py-3 bg-alt border-t border-[#e8d0c0] dark:border-rim">
+        <button
+          type="submit"
+          form="checkout-form"
+          disabled={!isFormValid}
+          className="w-full h-14 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Continuar al pago
+        </button>
       </div>
     </main>
   )

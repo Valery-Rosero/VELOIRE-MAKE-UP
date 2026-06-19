@@ -38,12 +38,14 @@ export function ProductGrid({ products, filterKey }: ProductGridProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.15 }}
-        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6"
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-4 lg:gap-6"
       >
         {products.map((p, i) => {
           const mainImage = p.product_images?.find((img) => img.is_main) ?? p.product_images?.[0]
           const activeShades = p.product_shades?.filter((s) => s.is_active) ?? []
           const totalStock = activeShades.reduce((sum, s) => sum + (s.stock ?? 0), 0)
+          // En móvil siempre variante A; en desktop alternar A/B
+          const variant = i % 2 === 1 ? 'b' : 'a'
           return (
             <ProductCard
               key={p.id}
@@ -57,6 +59,7 @@ export function ProductGrid({ products, filterKey }: ProductGridProps) {
               shadeCount={activeShades.length}
               totalStock={totalStock}
               index={i}
+              variant={variant}
             />
           )
         })}

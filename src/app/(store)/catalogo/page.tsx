@@ -139,7 +139,7 @@ export default async function CatalogoPage({ searchParams }: PageProps) {
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-10">
+    <main className="max-w-7xl mx-auto px-4 py-6 md:py-10">
       {/* Encabezado */}
       <div id="catalogo-top" className="mb-6">
         <h1 className="font-display text-3xl md:text-4xl text-fg">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from '@/components/ui/ThemeProvider'
@@ -9,22 +9,22 @@ import { useCartStore } from '@/lib/store/cart'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const NAV_LINKS = [
-  { label: 'Catálogo', href: '/catalogo' },
-  { label: 'Novedades', href: '/catalogo?orden=nuevo' },
+  { label: 'Catálogo',       href: '/catalogo' },
+  { label: 'Novedades',      href: '/catalogo?orden=nuevo' },
   { label: 'Sobre nosotras', href: '/nosotras' },
+  { label: 'Contacto',       href: '/contacto' },
 ]
 
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()
-
   return (
     <button
       onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
       aria-label="Cambiar tema"
-      className="w-9 h-9 flex items-center justify-center rounded-lg text-fg-2 hover:text-fg hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-150"
+      className="w-11 h-11 flex items-center justify-center text-fg-2 hover:text-fg transition-colors duration-150"
     >
-      <Moon size={17} className="dark:hidden" />
-      <Sun size={17} className="hidden dark:block" />
+      <Moon size={16} className="dark:hidden" />
+      <Sun size={16} className="hidden dark:block" />
     </button>
   )
 }
@@ -35,12 +35,32 @@ function isNavActive(href: string, pathname: string): boolean {
   return pathname === path || pathname.startsWith(path + '/')
 }
 
+function AccentStripe() {
+  return (
+    <div
+      aria-hidden
+      style={{
+        height: '2px',
+        background:
+          'linear-gradient(90deg, transparent 0%, #8B2252 8%, #ed4a89 28%, #a56583 52%, #c08fa2 72%, transparent 100%)',
+      }}
+    />
+  )
+}
+
 export function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const pathname = usePathname()
   const itemCount = useCartStore((s) => s.items.reduce((n, i) => n + i.quantity, 0))
   const openDrawer = useCartStore((s) => s.openDrawer)
+  const prevCountRef = useRef(itemCount)
+  const [badgeAnim, setBadgeAnim] = useState(0)
+
+  useEffect(() => {
+    if (itemCount > prevCountRef.current) setBadgeAnim((k) => k + 1)
+    prevCountRef.current = itemCount
+  }, [itemCount])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -48,158 +68,230 @@ export function Header() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  const badge = (
+    <AnimatePresence>
+      {itemCount > 0 && (
+        <motion.span
+          key={badgeAnim}
+          initial={{ scale: 0 }}
+          animate={{ scale: [0, 1.4, 1] }}
+          exit={{ scale: 0 }}
+          transition={{ duration: 0.3, times: [0, 0.6, 1] }}
+          className="absolute -top-0.5 -right-0.5 bg-rose-vivid text-white flex items-center justify-center rounded-full font-body font-medium pointer-events-none"
+          style={{ width: '15px', height: '15px', fontSize: '9px' }}
+        >
+          {itemCount}
+        </motion.span>
+      )}
+    </AnimatePresence>
+  )
+
   return (
     <>
       <header
-        className={`sticky top-0 z-40 transition-all duration-200 bg-alt ${
-          scrolled ? 'border-b border-rim' : 'border-b border-transparent'
+        className={`sticky top-0 z-40 bg-alt transition-all duration-200 ${
+          scrolled ? 'border-b border-[#e8d0c0] dark:border-rim shadow-[0_1px_8px_rgba(0,0,0,0.06)]' : ''
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-4">
+        <AccentStripe />
 
-          {/* Hamburguesa — solo móvil */}
-          <button
-            className="md:hidden w-9 h-9 flex items-center justify-center text-fg-2 hover:text-fg transition-colors"
-            onClick={() => setMenuOpen(true)}
-            aria-label="Abrir menú"
-          >
-            <Menu size={20} />
-          </button>
+        {/* ── Fila principal: logo + íconos ── */}
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          {/*
+            Un solo div con h-16 en móvil y py-4 en desktop.
+            Los hijos usan md:hidden / hidden md:flex para alternar.
+          */}
+          <div className="relative flex items-center h-16 md:h-auto md:py-4">
 
-          {/* Logo */}
-          <Link
-            href="/"
-            className="font-display text-2xl text-fg uppercase tracking-[0.12em] md:mr-8 flex-1 md:flex-none text-center md:text-left"
-          >
-            Vèloire
-          </Link>
-
-          {/* Nav desktop */}
-          <nav className="hidden md:flex items-center gap-7 flex-1">
-            {NAV_LINKS.map((link) => {
-              const active = isNavActive(link.href, pathname)
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`relative text-sm font-body transition-colors duration-150 ${
-                    active
-                      ? 'text-fg after:absolute after:-bottom-0.5 after:left-0 after:w-full after:h-px after:bg-accent'
-                      : 'text-accent hover:text-fg'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              )
-            })}
-          </nav>
-
-          {/* Acciones derecha */}
-          <div className="flex items-center gap-0.5">
+            {/* Hamburguesa — solo móvil */}
             <button
-              aria-label="Buscar"
-              className="w-9 h-9 flex items-center justify-center rounded-lg text-fg-2 hover:text-fg hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-150"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Abrir menú"
+              className="md:hidden w-11 h-11 flex items-center justify-center text-fg-2 hover:text-fg transition-colors shrink-0"
             >
-              <Search size={17} />
+              <Menu size={22} />
             </button>
+
+            {/* Logo móvil — centrado absolutamente */}
             <Link
-              href="/cuenta"
-              aria-label="Mi cuenta"
-              className="w-9 h-9 flex items-center justify-center rounded-lg text-fg-2 hover:text-fg hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-150"
+              href="/"
+              className="md:hidden absolute left-1/2 -translate-x-1/2 flex flex-col items-center leading-none"
             >
-              <User size={17} />
+              <span
+                className="font-display italic text-fg leading-none uppercase"
+                style={{ fontSize: '26px', letterSpacing: '1px' }}
+              >
+                Vèloire
+              </span>
+              <span
+                className="font-body uppercase leading-none mt-0.75"
+                style={{ fontSize: '7px', letterSpacing: '4px', color: '#a56583' }}
+              >
+                MAKE UP
+              </span>
             </Link>
-            <button
-              onClick={openDrawer}
-              aria-label="Abrir carrito"
-              className="relative w-9 h-9 flex items-center justify-center rounded-lg text-fg-2 hover:text-fg hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-150"
+
+            {/* Logo desktop — alineado a la izquierda */}
+            <Link
+              href="/"
+              className="hidden md:flex flex-col items-start leading-none"
             >
-              <ShoppingBag size={17} />
-              <AnimatePresence>
-                {itemCount > 0 && (
-                  <motion.span
-                    key="badge"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                    className="absolute -top-0.5 -right-0.5 bg-accent text-white text-[10px] font-bold rounded-full min-w-4 h-4 flex items-center justify-center px-0.5"
+              <span
+                className="font-display italic text-fg leading-none uppercase"
+                style={{ fontSize: '36px', letterSpacing: '1px' }}
+              >
+                Vèloire
+              </span>
+              <span
+                className="font-body uppercase leading-none mt-0.75"
+                style={{ fontSize: '8px', letterSpacing: '4px', color: '#a56583' }}
+              >
+                MAKE UP
+              </span>
+            </Link>
+
+            {/* Íconos — lado derecho */}
+            <div className="ml-auto flex items-center gap-0.5">
+              {/* Solo desktop */}
+              <button
+                aria-label="Buscar"
+                className="hidden md:flex w-9 h-9 items-center justify-center text-fg-2 hover:text-fg transition-colors duration-150"
+              >
+                <Search size={16} />
+              </button>
+              <Link
+                href="/cuenta"
+                aria-label="Mi cuenta"
+                className="hidden md:flex w-9 h-9 items-center justify-center text-fg-2 hover:text-fg transition-colors duration-150"
+              >
+                <User size={16} />
+              </Link>
+
+              {/* Carrito — ambos */}
+              <button
+                onClick={openDrawer}
+                aria-label="Abrir carrito"
+                className="relative w-11 h-11 md:w-9 md:h-9 flex items-center justify-center text-fg-2 hover:text-fg transition-colors duration-150"
+              >
+                <ShoppingBag size={18} className="md:hidden" />
+                <ShoppingBag size={16} className="hidden md:block" />
+                {badge}
+              </button>
+
+              {/* Tema — ambos */}
+              <ThemeToggle />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Separador + nav (solo desktop) ── */}
+        <div className="hidden md:block border-t border-[#e8d0c0] dark:border-rim" />
+        <div className="hidden md:block">
+          <div className="max-w-7xl mx-auto px-6">
+            <nav className="flex items-center gap-10 h-10">
+              {NAV_LINKS.map((link) => {
+                const active = isNavActive(link.href, pathname)
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`font-body transition-colors duration-150 ${
+                      active
+                        ? 'text-fg border-b-2 border-fg pb-0.5'
+                        : 'text-fg-2 hover:text-fg'
+                    }`}
+                    style={{ fontSize: '11px', letterSpacing: '2px' }}
                   >
-                    {itemCount}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </button>
-            <ThemeToggle />
+                    {link.label}
+                  </Link>
+                )
+              })}
+            </nav>
           </div>
         </div>
       </header>
 
-      {/* Menú móvil */}
+      {/* ── Drawer móvil ── */}
       <AnimatePresence>
         {menuOpen && (
           <>
+            {/* Overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="fixed inset-0 bg-black/40 z-50 md:hidden"
+              className="fixed inset-0 bg-black/40 z-50"
               onClick={() => setMenuOpen(false)}
             />
-            <motion.aside
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="fixed top-0 left-0 h-full w-72 bg-alt z-50 flex flex-col md:hidden border-r border-rim"
+
+            {/* Panel — full width desde arriba */}
+            <motion.div
+              initial={{ y: '-100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '-100%' }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="fixed top-0 left-0 right-0 w-full z-50 bg-alt"
             >
-              <div className="flex items-center justify-between px-5 h-16 border-b border-rim">
+              <AccentStripe />
+
+              {/* Encabezado del drawer */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-[#e8d0c0] dark:border-rim/40">
                 <Link
                   href="/"
-                  className="font-display text-2xl text-fg uppercase tracking-[0.12em]"
                   onClick={() => setMenuOpen(false)}
+                  className="flex flex-col items-start leading-none"
                 >
-                  Vèloire
+                  <span
+                    className="font-display italic text-fg leading-none uppercase"
+                    style={{ fontSize: '30px', letterSpacing: '1px' }}
+                  >
+                    Vèloire
+                  </span>
+                  <span
+                    className="font-body uppercase leading-none mt-0.75"
+                    style={{ fontSize: '7px', letterSpacing: '4px', color: '#a56583' }}
+                  >
+                    MAKE UP
+                  </span>
                 </Link>
                 <button
                   onClick={() => setMenuOpen(false)}
-                  className="text-fg-2 hover:text-fg transition-colors"
                   aria-label="Cerrar menú"
+                  className="w-11 h-11 flex items-center justify-center text-fg-2 hover:text-fg transition-colors"
                 >
-                  <X size={20} />
+                  <X size={22} />
                 </button>
               </div>
-              <nav className="flex flex-col px-4 py-6 gap-1">
-                {NAV_LINKS.map((link) => {
-                  const active = isNavActive(link.href, pathname)
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={() => setMenuOpen(false)}
-                      className={`px-3 py-3 rounded-lg text-sm font-body transition-colors ${
-                        active
-                          ? 'text-fg bg-black/5 dark:bg-white/5 font-medium'
-                          : 'text-accent hover:text-fg hover:bg-black/5 dark:hover:bg-white/5'
-                      }`}
-                    >
-                      {link.label}
-                    </Link>
-                  )
-                })}
+
+              {/* Links con separadores — centrados */}
+              <nav className="w-full flex flex-col">
+                {NAV_LINKS.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMenuOpen(false)}
+                    className={`w-full flex items-center justify-center h-14 border-b border-[#e8d0c0] dark:border-rim/30 font-display italic text-[22px] transition-colors duration-150 ${
+                      isNavActive(link.href, pathname) ? 'text-accent' : 'text-fg hover:text-accent'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
               </nav>
 
-              <div className="mt-auto border-t border-rim px-4 py-4 flex items-center gap-3">
+              {/* Pie del drawer */}
+              <div className="flex justify-center py-4">
                 <Link
                   href="/cuenta"
                   onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2 text-sm font-body text-fg-2 hover:text-fg transition-colors"
+                  className="h-11 flex items-center gap-2 text-sm font-body text-fg-2 hover:text-fg transition-colors"
                 >
-                  <User size={16} />
+                  <User size={15} />
                   Mi cuenta
                 </Link>
               </div>
-            </motion.aside>
+            </motion.div>
           </>
         )}
       </AnimatePresence>

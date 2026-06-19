@@ -99,12 +99,12 @@ export function ProductActions({
           </div>
         )}
 
-        {/* Add to cart */}
+        {/* Add to cart — normal flow en desktop */}
         <motion.button
           onClick={handleAdd}
           disabled={outOfStock}
           whileTap={outOfStock ? undefined : { scale: 0.98 }}
-          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-body font-medium transition-colors duration-200 ${
+          className={`hidden md:flex w-full items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-body font-medium transition-colors duration-200 ${
             outOfStock
               ? 'bg-alt text-fg-3 cursor-not-allowed'
               : added
@@ -160,6 +160,54 @@ export function ProductActions({
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+
+      {/* Sticky mobile add-to-cart bar */}
+      <div
+        className="md:hidden fixed bottom-0 inset-x-0 z-30 border-t border-white/10"
+        style={{ backgroundColor: '#1a1a1a' }}
+      >
+        <motion.button
+          onClick={handleAdd}
+          disabled={outOfStock}
+          whileTap={outOfStock ? undefined : { scale: 0.99 }}
+          className={`w-full flex items-center justify-center gap-2 font-body text-sm font-medium transition-colors duration-200 ${
+            outOfStock
+              ? 'opacity-40 cursor-not-allowed text-nude'
+              : added
+              ? 'text-success'
+              : 'text-nude'
+          }`}
+          style={{ height: '56px' }}
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            {added ? (
+              <motion.span
+                key="added-m"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.15 }}
+              >
+                ¡Añadido!
+              </motion.span>
+            ) : outOfStock ? (
+              <motion.span key="out-m">Sin stock</motion.span>
+            ) : (
+              <motion.span
+                key="idle-m"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.15 }}
+                className="flex items-center gap-2"
+              >
+                <ShoppingBag size={16} />
+                Añadir al carrito
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
       </div>
 
       {/* Toast */}

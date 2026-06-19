@@ -146,12 +146,18 @@ export default async function ProductoPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <main className="max-w-7xl mx-auto px-4 py-8 md:py-12">
-        <ProductClient product={product} />
+      <main>
+        {/* Layout inmersivo sin padding externo para que las columnas sean fluidas */}
+        <div className="max-w-7xl mx-auto">
+          <ProductClient product={product} />
+        </div>
 
         {related.length > 0 && (
-          <section className="mt-16 md:mt-20">
-            <h2 className="font-display text-2xl text-fg mb-8">También te puede gustar</h2>
+          <section className="max-w-7xl mx-auto px-4 mt-16 md:mt-20 pb-16">
+            <div className="flex items-start gap-4 mb-8">
+              <div className="w-0.5 h-8 bg-accent mt-1 shrink-0" />
+              <h2 className="font-display text-2xl text-fg">También te puede gustar</h2>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               {related.map((p, i) => {
                 const mainImg =
