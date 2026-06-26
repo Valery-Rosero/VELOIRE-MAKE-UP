@@ -1,37 +1,29 @@
 'use client'
 
-import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Trash2 } from 'lucide-react'
 import { deleteOrder } from '@/app/admin/pedidos/actions'
+import { useConfirmAction } from '@/hooks/useConfirmAction'
 
 interface Props {
   orderId: string
 }
 
 export function DeleteOrderButton({ orderId }: Props) {
-  const [showModal, setShowModal] = useState(false)
-  const [isPending, startTransition] = useTransition()
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const router = useRouter()
-
-  function handleConfirm() {
-    setErrorMsg(null)
-    startTransition(async () => {
+  const { showModal, isPending, error, open, close, confirm } = useConfirmAction(
+    async () => {
       const result = await deleteOrder(orderId)
-      if ('error' in result) {
-        setErrorMsg(result.error)
-      } else {
-        router.push('/admin/pedidos')
-      }
-    })
-  }
+      if ('error' in result) return { error: result.error }
+    },
+    () => router.push('/admin/pedidos')
+  )
 
   return (
     <>
       <button
-        onClick={() => setShowModal(true)}
+        onClick={open}
         className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-error/30 text-error text-sm font-body font-medium hover:bg-error/10 transition-colors"
       >
         <Trash2 size={14} />
@@ -47,7 +39,7 @@ export function DeleteOrderButton({ orderId }: Props) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => { if (!isPending) setShowModal(false) }}
+              onClick={close}
             />
             <motion.div
               key="del-modal"
@@ -62,19 +54,19 @@ export function DeleteOrderButton({ orderId }: Props) {
                 <p className="font-body text-sm text-fg-2 mb-5 leading-relaxed">
                   El pedido y todos sus registros se eliminarán permanentemente. Esta acción no se puede deshacer.
                 </p>
-                {errorMsg && (
-                  <p className="font-body text-xs text-error mb-3">{errorMsg}</p>
+                {error && (
+                  <p className="font-body text-xs text-error mb-3">{error}</p>
                 )}
                 <div className="flex flex-col gap-2">
                   <button
-                    onClick={handleConfirm}
+                    onClick={confirm}
                     disabled={isPending}
                     className="w-full py-2.5 rounded-xl bg-error text-white text-sm font-body font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                   >
                     {isPending ? 'Eliminando...' : 'Sí, eliminar definitivamente'}
                   </button>
                   <button
-                    onClick={() => setShowModal(false)}
+                    onClick={close}
                     disabled={isPending}
                     className="text-sm font-body text-fg-3 hover:text-fg transition-colors py-2"
                   >

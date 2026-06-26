@@ -8,6 +8,7 @@ import { CancelOrderButton } from '@/components/admin/CancelOrderButton'
 import { DeleteOrderButton } from '@/components/admin/DeleteOrderButton'
 import { formatPrice, formatDate } from '@/lib/format'
 import type { OrderStatus } from '@/types/database'
+import type { Order, OrderItem, HistoryEntry } from '@/types/orders'
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
   pending_payment: 'Pago pendiente',
@@ -25,44 +26,6 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
   shipped: 'bg-accent/15 text-accent',
   delivered: 'bg-success/15 text-success',
   cancelled: 'bg-error/15 text-error',
-}
-
-interface OrderItem {
-  id: string
-  product_name: string
-  shade_name: string
-  shade_hex: string
-  image_url: string | null
-  quantity: number
-  unit_price: number
-  subtotal: number
-}
-
-interface Order {
-  id: string
-  order_number: string
-  status: OrderStatus
-  customer_name: string
-  customer_email: string
-  customer_phone: string
-  address: string
-  neighborhood: string
-  city: string
-  department: string
-  notes: string | null
-  subtotal: number
-  delivery_fee: number
-  total: number
-  payment_method: string
-  payment_confirmed_at: string | null
-  created_at: string
-  order_items: OrderItem[]
-}
-
-interface HistoryEntry {
-  status: OrderStatus
-  note: string | null
-  changed_at: string
 }
 
 interface PageProps {

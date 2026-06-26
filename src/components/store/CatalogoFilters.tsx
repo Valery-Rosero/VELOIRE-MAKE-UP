@@ -1,8 +1,10 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { ChevronDown } from 'lucide-react'
+import { useClickOutside } from '@/hooks/useClickOutside'
+import { buildCatalogoUrl } from '@/lib/catalogo'
 
 interface Category {
   id: string
@@ -31,30 +33,14 @@ export function CatalogoFilters({ categories, activeCategory, activeOrder }: Cat
   const activeSortLabel =
     SORT_OPTIONS.find((o) => o.value === (activeOrder ?? ''))?.label ?? 'Más recientes'
 
-  useEffect(() => {
-    function handleOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleOutside)
-    return () => document.removeEventListener('mousedown', handleOutside)
-  }, [])
-
-  function buildUrl(categoria: string | null, orden: string | null) {
-    const params = new URLSearchParams()
-    if (categoria) params.set('categoria', categoria)
-    if (orden)    params.set('orden', orden)
-    const qs = params.toString()
-    return `/catalogo${qs ? `?${qs}` : ''}`
-  }
+  useClickOutside(dropdownRef, () => setDropdownOpen(false))
 
   function setCategory(slug: string | null) {
-    router.push(buildUrl(slug, activeOrder ?? null))
+    router.push(buildCatalogoUrl({ categoria: slug, orden: activeOrder }))
   }
 
   function setOrder(value: string) {
-    router.push(buildUrl(activeCategory ?? null, value || null))
+    router.push(buildCatalogoUrl({ categoria: activeCategory, orden: value || null }))
     setDropdownOpen(false)
   }
 

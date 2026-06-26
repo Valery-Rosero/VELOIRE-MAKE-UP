@@ -1,36 +1,28 @@
 'use client'
 
-import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { cancelOrder } from '@/app/admin/pedidos/actions'
+import { useConfirmAction } from '@/hooks/useConfirmAction'
 
 interface Props {
   orderId: string
 }
 
 export function CancelOrderButton({ orderId }: Props) {
-  const [showModal, setShowModal] = useState(false)
-  const [isPending, startTransition] = useTransition()
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const router = useRouter()
-
-  function handleConfirm() {
-    setErrorMsg(null)
-    startTransition(async () => {
+  const { showModal, isPending, error, open, close, confirm } = useConfirmAction(
+    async () => {
       const result = await cancelOrder(orderId)
-      if ('error' in result) {
-        setErrorMsg(result.error)
-      } else {
-        router.push('/admin/pedidos')
-      }
-    })
-  }
+      if ('error' in result) return { error: result.error }
+    },
+    () => router.push('/admin/pedidos')
+  )
 
   return (
     <>
       <button
-        onClick={() => setShowModal(true)}
+        onClick={open}
         className="w-full py-2.5 rounded-xl bg-error/10 text-error text-sm font-body font-medium hover:bg-error/20 transition-colors"
       >
         Cancelar pedido
@@ -45,7 +37,7 @@ export function CancelOrderButton({ orderId }: Props) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => { if (!isPending) setShowModal(false) }}
+              onClick={close}
             />
             <motion.div
               key="cancel-modal"
@@ -60,19 +52,19 @@ export function CancelOrderButton({ orderId }: Props) {
                 <p className="font-body text-sm text-fg-2 mb-5 leading-relaxed">
                   Esta acción no se puede deshacer. El pedido quedará marcado como cancelado.
                 </p>
-                {errorMsg && (
-                  <p className="font-body text-xs text-error mb-3">{errorMsg}</p>
+                {error && (
+                  <p className="font-body text-xs text-error mb-3">{error}</p>
                 )}
                 <div className="flex flex-col gap-2">
                   <button
-                    onClick={handleConfirm}
+                    onClick={confirm}
                     disabled={isPending}
                     className="w-full py-2.5 rounded-xl bg-error/10 text-error text-sm font-body font-medium hover:bg-error/20 transition-colors disabled:opacity-50"
                   >
                     {isPending ? 'Cancelando...' : 'Sí, cancelar pedido'}
                   </button>
                   <button
-                    onClick={() => setShowModal(false)}
+                    onClick={close}
                     disabled={isPending}
                     className="text-sm font-body text-fg-3 hover:text-fg transition-colors py-2"
                   >

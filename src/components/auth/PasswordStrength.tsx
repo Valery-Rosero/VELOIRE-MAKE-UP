@@ -1,5 +1,3 @@
-'use client'
-
 export function getPasswordStrength(password: string): 0 | 1 | 2 | 3 {
   if (!password) return 0
   let score = 0

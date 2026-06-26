@@ -7,24 +7,13 @@ import { ToggleProductStatus } from '@/components/admin/ToggleProductStatus'
 import { DeleteProductButton } from '@/components/admin/DeleteProductButton'
 import { ProductsSearch } from '@/components/admin/ProductsSearch'
 import type { ProductStatus } from '@/types/database'
+import type { ProductRow } from '@/types/catalog'
 
 const STATUS_LABELS = { draft: 'Borrador', active: 'Activo', inactive: 'Inactivo' }
 const STATUS_COLORS = {
   draft: 'bg-warning/15 text-warning',
   active: 'bg-success/15 text-success',
   inactive: 'bg-error/15 text-error',
-}
-
-interface ProductRow {
-  id: string
-  name: string
-  slug: string
-  status: 'draft' | 'active' | 'inactive'
-  price: number
-  is_featured: boolean
-  categories: { name: string } | null
-  product_shades: Array<{ id: string; stock: number; is_active: boolean }>
-  product_images: Array<{ url: string; is_main: boolean }>
 }
 
 interface PageProps {

@@ -7,6 +7,7 @@ import {
 import { createAdminClient } from '@/lib/supabase/server'
 import { formatPrice, formatDate } from '@/lib/format'
 import type { OrderStatus } from '@/types/database'
+import type { RawOrder, RawItem, LowStockRow } from '@/types/orders'
 import { RevenueChart } from '@/components/admin/dashboard/RevenueChart'
 import { DonutChart } from '@/components/admin/dashboard/DonutChart'
 import { HorizontalBars } from '@/components/admin/dashboard/HorizontalBars'
@@ -46,35 +47,6 @@ const STATUS_BADGE: Record<OrderStatus, string> = {
 const CAT_PALETTE = ['#a56583','#B8860B','#1D9E75','#7b68a8','#185FA5','#c08fa2','#D4A017']
 
 const WEEKDAYS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface RawOrder {
-  id: string
-  status: OrderStatus
-  total: number
-  created_at: string
-  customer_email: string
-  customer_name?: string
-  order_number?: string
-}
-
-interface RawItem {
-  product_id: string | null
-  product_name: string
-  shade_id: string | null
-  shade_name: string
-  shade_hex: string
-  quantity: number
-  subtotal: number
-}
-
-interface LowStockRow {
-  product_id: string
-  product_name: string
-  min_shade_stock: number
-  total_stock: number
-}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

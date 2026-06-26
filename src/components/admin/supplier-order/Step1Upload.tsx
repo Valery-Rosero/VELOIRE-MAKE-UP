@@ -1,125 +1,23 @@
 'use client'
 
 import { useRef, useState, useCallback } from 'react'
-import * as XLSX from 'xlsx'
 import { FileSpreadsheet, Upload, AlertCircle, ChevronRight, RotateCcw } from 'lucide-react'
-import { useSupplierOrderStore, type WizardProduct, type WizardShade } from '@/lib/store/supplier-order'
+import { useSupplierOrderStore, type WizardProduct } from '@/lib/store/supplier-order'
+import {
+  REQUIRED_COLS,
+  type ColKey,
+  detectColumns,
+  buildProducts,
+  parseExcelToRows,
+} from '@/lib/excel-parser'
 
-// ─── Column mapping ───────────────────────────────────────────────────────────
-
-const REQUIRED_COLS = {
-  marca: ['marca', 'brand'],
-  nombre: ['nombre', 'name', 'producto', 'product'],
-  descripcion: ['descripcion', 'description', 'desc'],
-  referencias: ['referencias', 'referencia', 'ref', 'reference', 'codigo', 'code'],
-  cantidad_por_referencia: ['cantidad_por_referencia', 'cantidad', 'units', 'unidades', 'stock'],
-  total_individual_mayor_con_impuestos: [
-    'total_individual_mayor_con_impuestos',
-    'precio_unitario',
-    'costo_unitario',
-    'precio_mayor',
-    'precio',
-    'unit_price',
-    'precio_individual',
-  ],
-} as const
-
-type ColKey = keyof typeof REQUIRED_COLS
-
-function normalizeHeader(s: string): string {
-  return String(s)
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/\s+/g, '_')
-    .replace(/[^a-z0-9_]/g, '')
-}
-
-function detectColumns(headers: string[]): Partial<Record<ColKey, string>> {
-  const normalizedHeaders = headers.map((h) => ({ original: h, normalized: normalizeHeader(h) }))
-  const result: Partial<Record<ColKey, string>> = {}
-
-  for (const [key, aliases] of Object.entries(REQUIRED_COLS) as [ColKey, readonly string[]][]) {
-    const match = normalizedHeaders.find((h) =>
-      aliases.some((alias) => h.normalized === alias || h.normalized.includes(alias))
-    )
-    if (match) result[key] = match.original
-  }
-
-  return result
-}
-
-function buildProducts(rows: Record<string, unknown>[], colMap: Record<ColKey, string>): WizardProduct[] {
-  const grouped = new Map<string, { product: Omit<WizardProduct, 'shades'>; shades: WizardShade[] }>()
-
-  // Carry-forward state: celdas combinadas en Excel solo tienen valor en la
-  // primera fila del grupo; las filas siguientes quedan vacías en SheetJS.
-  let lastNombre = ''
-  let lastMarca = ''
-  let lastDescripcion = ''
-  let lastCosto = 0
-  let counter = 0   // evita IDs duplicados generados en el mismo milisegundo
-
-  for (const row of rows) {
-    const rawNombre = String(row[colMap.nombre] ?? '').trim()
-    const nombre = rawNombre || lastNombre
-    if (!nombre) continue
-    if (rawNombre) lastNombre = rawNombre
-
-    const rawMarca = String(row[colMap.marca] ?? '').trim()
-    const marca = rawMarca || lastMarca
-    if (rawMarca) lastMarca = rawMarca
-
-    const rawDesc = String(row[colMap.descripcion] ?? '').trim()
-    const descripcion = rawDesc || lastDescripcion
-    if (rawDesc) lastDescripcion = rawDesc
-
-    const rawCosto = Number(row[colMap.total_individual_mayor_con_impuestos] ?? 0)
-    const costo = rawCosto > 0 ? rawCosto : lastCosto
-    if (rawCosto > 0) lastCosto = rawCosto
-
-    const ref = String(row[colMap.referencias] ?? '').trim()
-    const rawStock = Number(row[colMap.cantidad_por_referencia] ?? 1)
-    const stock = isNaN(rawStock) ? 1 : Math.max(0, Math.floor(rawStock))
-
-    if (!grouped.has(nombre)) {
-      grouped.set(nombre, {
-        product: {
-          id: `p-${counter++}-${Math.random().toString(36).slice(2, 8)}`,
-          marca,
-          nombre,
-          descripcion,
-          costoUnitario: costo,
-          precioVenta: '',
-          categoryId: '',
-          isFeatured: false,
-          mainImageUrl: '',
-          noColorVariation: false,
-          publishStatus: 'draft',
-        },
-        shades: [],
-      })
-    }
-
-    const entry = grouped.get(nombre)!
-    // Actualizar campos de nivel producto si aparecen en filas siguientes
-    if (marca) entry.product.marca = marca
-    if (descripcion) entry.product.descripcion = descripcion
-    if (costo > 0) entry.product.costoUnitario = costo
-
-    if (ref) {
-      entry.shades.push({
-        id: `s-${counter++}-${Math.random().toString(36).slice(2, 8)}`,
-        excelRef: ref,
-        name: ref,
-        hexColor: '#C8C8C8',
-        imageUrl: '',
-        stock,
-      })
-    }
-  }
-
-  return [...grouped.values()].map((e) => ({ ...e.product, shades: e.shades }))
+const COL_LABELS: Record<ColKey, string> = {
+  marca: 'Marca del proveedor',
+  nombre: 'Nombre del producto',
+  descripcion: 'Descripción',
+  referencias: 'Referencia / tono',
+  cantidad_por_referencia: 'Unidades por referencia',
+  total_individual_mayor_con_impuestos: 'Precio unitario al por mayor',
 }
 
 // ─── Preview card ─────────────────────────────────────────────────────────────
@@ -145,15 +43,6 @@ function ProductPreviewCard({ p }: { p: WizardProduct }) {
 
 // ─── Column mapper UI ─────────────────────────────────────────────────────────
 
-const COL_LABELS: Record<ColKey, string> = {
-  marca: 'Marca del proveedor',
-  nombre: 'Nombre del producto',
-  descripcion: 'Descripción',
-  referencias: 'Referencia / tono',
-  cantidad_por_referencia: 'Unidades por referencia',
-  total_individual_mayor_con_impuestos: 'Precio unitario al por mayor',
-}
-
 function ColumnMapper({
   headers,
   mapping,
@@ -164,7 +53,6 @@ function ColumnMapper({
   onChange: (key: ColKey, value: string) => void
 }) {
   const missing = (Object.keys(REQUIRED_COLS) as ColKey[]).filter((k) => !mapping[k])
-
   if (missing.length === 0) return null
 
   return (
@@ -183,9 +71,7 @@ function ColumnMapper({
             >
               <option value="">— Seleccionar columna —</option>
               {headers.map((h) => (
-                <option key={h} value={h}>
-                  {h}
-                </option>
+                <option key={h} value={h}>{h}</option>
               ))}
             </select>
           </div>
@@ -208,50 +94,32 @@ export function Step1Upload() {
   const [rawRows, setRawRows] = useState<Record<string, unknown>[]>([])
   const [preview, setPreview] = useState<WizardProduct[]>([])
 
-  const hasMissing = rawRows.length > 0 &&
+  const hasMissing =
+    rawRows.length > 0 &&
     (Object.keys(REQUIRED_COLS) as ColKey[]).some((k) => !colMap[k])
 
   const parseFile = useCallback(async (file: File) => {
-    if (!file.name.match(/\.(xlsx|xls|csv)$/i)) {
-      setError('Formato no soportado. Usa .xlsx, .xls o .csv')
-      return
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      setError('El archivo supera el límite de 10MB')
-      return
-    }
-
     setParsing(true)
     setError(null)
     setPreview([])
 
-    try {
-      const buffer = await file.arrayBuffer()
-      const wb = XLSX.read(buffer, { type: 'array' })
-      const ws = wb.Sheets[wb.SheetNames[0]]
-      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: '' })
+    const { rows, error: parseError } = await parseExcelToRows(file)
+    if (parseError) {
+      setError(parseError)
+      setParsing(false)
+      return
+    }
 
-      if (rows.length === 0) {
-        setError('El archivo está vacío o no tiene filas de datos.')
-        setParsing(false)
-        return
-      }
+    const detectedHeaders = Object.keys(rows[0])
+    const detected = detectColumns(detectedHeaders)
 
-      const detectedHeaders = Object.keys(rows[0])
-      const detected = detectColumns(detectedHeaders)
+    setHeaders(detectedHeaders)
+    setColMap(detected)
+    setRawRows(rows)
 
-      setHeaders(detectedHeaders)
-      setColMap(detected)
-      setRawRows(rows)
-
-      // If all columns detected, build preview immediately
-      const allPresent = (Object.keys(REQUIRED_COLS) as ColKey[]).every((k) => detected[k])
-      if (allPresent) {
-        const products = buildProducts(rows, detected as Record<ColKey, string>)
-        setPreview(products)
-      }
-    } catch {
-      setError('No se pudo leer el archivo. Asegúrate de que sea un Excel válido.')
+    const allPresent = (Object.keys(REQUIRED_COLS) as ColKey[]).every((k) => detected[k])
+    if (allPresent) {
+      setPreview(buildProducts(rows, detected as Record<ColKey, string>))
     }
 
     setParsing(false)

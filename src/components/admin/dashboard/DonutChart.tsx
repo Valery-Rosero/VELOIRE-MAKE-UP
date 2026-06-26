@@ -1,5 +1,3 @@
-'use client'
-
 // Donut chart con conic-gradient (sin librería externa).
 // Acepta un array de segmentos con valor, color y etiqueta.
 

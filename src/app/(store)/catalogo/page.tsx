@@ -3,30 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 import { CatalogoFilters } from '@/components/store/CatalogoFilters'
 import { ProductGrid } from '@/components/store/ProductGrid'
 import { CatalogoPagination } from '@/components/store/CatalogoPagination'
+import type { Category, CatalogoProduct } from '@/types/catalog'
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 20
-
-// ─── Tipos ───────────────────────────────────────────────────────────────────
-
-interface Category {
-  id: string
-  name: string
-  slug: string
-  description: string | null
-}
-
-export interface CatalogoProduct {
-  id: string
-  slug: string
-  name: string
-  price: number
-  compare_price: number | null
-  product_images: Array<{ url: string; alt_text: string | null; is_main: boolean }>
-  product_shades: Array<{ id: string; is_active: boolean; stock: number }>
-  categories: { name: string } | null
-}
 
 interface PageProps {
   searchParams: Promise<{ categoria?: string; orden?: string; pagina?: string }>

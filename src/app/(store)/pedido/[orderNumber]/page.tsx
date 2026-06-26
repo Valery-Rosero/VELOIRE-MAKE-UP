@@ -4,39 +4,10 @@ import Link from 'next/link'
 import { CheckCircle2, Circle, Home } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import type { OrderStatus } from '@/types/database'
+import type { Order, OrderItem } from '@/types/orders'
 import { CopyButton } from '@/components/ui/CopyButton'
 import { OrderCheckAnimation } from '@/components/store/OrderCheckAnimation'
 import { CancelOrderButton } from '@/components/store/CancelOrderButton'
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface OrderItem {
-  id: string
-  product_name: string
-  shade_name: string
-  shade_hex: string
-  image_url: string | null
-  quantity: number
-  unit_price: number
-  subtotal: number
-}
-
-interface Order {
-  id: string
-  order_number: string
-  status: OrderStatus
-  customer_name: string
-  customer_email: string
-  address: string
-  neighborhood: string
-  city: string
-  subtotal: number
-  delivery_fee: number
-  total: number
-  payment_confirmed_at: string | null
-  created_at: string
-  order_items: OrderItem[]
-}
 
 interface PageProps {
   params: Promise<{ orderNumber: string }>

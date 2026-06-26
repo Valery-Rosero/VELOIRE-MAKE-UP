@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { PackageSearch } from 'lucide-react'
 import Link from 'next/link'
 import { ProductCard } from './ProductCard'
-import type { CatalogoProduct } from '@/app/(store)/catalogo/page'
+import type { CatalogoProduct } from '@/types/catalog'
 
 interface ProductGridProps {
   products: CatalogoProduct[]

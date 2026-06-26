@@ -28,6 +28,14 @@ export function formatRelativeDate(iso: string): string {
   return formatDate(iso)
 }
 
+export function calculateDiscountPct(
+  price: number,
+  comparePrice: number | null | undefined
+): number | null {
+  if (!comparePrice || comparePrice <= price) return null
+  return Math.round((1 - price / comparePrice) * 100)
+}
+
 export function slugify(text: string) {
   return text
     .toLowerCase()

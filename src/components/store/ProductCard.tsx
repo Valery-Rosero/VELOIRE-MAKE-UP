@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { calculateDiscountPct } from '@/lib/format'
 
 interface ProductCardProps {
   slug: string
@@ -32,10 +33,7 @@ export function ProductCard({
   variant = 'a',
 }: ProductCardProps) {
   const isOutOfStock = totalStock !== undefined && totalStock === 0
-  const discountPct =
-    comparePrice && comparePrice > price
-      ? Math.round((1 - price / comparePrice) * 100)
-      : null
+  const discountPct = calculateDiscountPct(price, comparePrice)
 
   if (variant === 'b') {
     return (

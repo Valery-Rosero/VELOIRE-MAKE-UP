@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { formatPrice, formatRelativeDate } from '@/lib/format'
 import { OrdersSearch } from '@/components/admin/OrdersSearch'
 import type { OrderStatus } from '@/types/database'
+import type { OrderRow } from '@/types/orders'
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
   pending_payment: 'Pago pendiente',
@@ -40,17 +41,6 @@ const PAGE_SIZE = 20
 
 interface PageProps {
   searchParams: Promise<{ status?: string; q?: string; page?: string }>
-}
-
-interface OrderRow {
-  id: string
-  order_number: string
-  customer_name: string
-  customer_email: string
-  status: OrderStatus
-  total: number
-  item_count: number
-  created_at: string
 }
 
 export default async function PedidosAdminPage({ searchParams }: PageProps) {

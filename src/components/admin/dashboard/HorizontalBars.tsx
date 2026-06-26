@@ -1,5 +1,3 @@
-'use client'
-
 // Barras horizontales CSS para top productos, top tonos y días de la semana.
 // Sin dependencias externas.
 

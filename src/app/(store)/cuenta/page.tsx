@@ -4,6 +4,7 @@ import { Package } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { ProfileForm } from '@/components/cuenta/ProfileForm'
 import { SignOutButton } from '@/components/cuenta/SignOutButton'
+import { formatPrice, formatDate } from '@/lib/format'
 import type { OrderStatus } from '@/types/database'
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
@@ -22,14 +23,6 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
   shipped: 'bg-accent/15 text-accent',
   delivered: 'bg-success/15 text-success',
   cancelled: 'bg-error/15 text-error',
-}
-
-function formatPrice(n: number) {
-  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
-}
-
-function formatDate(iso: string) {
-  return new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(iso))
 }
 
 interface OrderRow {

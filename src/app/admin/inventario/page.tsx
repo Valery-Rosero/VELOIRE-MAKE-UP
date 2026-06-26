@@ -1,26 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/server'
-import { InventoryTable, type InventoryRowData } from '@/components/admin/InventoryTable'
-
-interface InventoryRow {
-  product_id: string
-  product_name: string
-  category_name: string | null
-  status: 'draft' | 'active' | 'inactive'
-  total_shades: number
-  total_stock: number
-  out_of_stock_shades: number
-  low_stock_shades: number
-  min_shade_stock: number
-}
-
-interface ShadeRow {
-  id: string
-  product_id: string
-  name: string
-  hex_color: string
-  stock: number
-  is_active: boolean
-}
+import { InventoryTable } from '@/components/admin/InventoryTable'
+import type { InventoryRow, ShadeDetail, InventoryRowData } from '@/types/inventory'
 
 export default async function InventarioPage() {
   const supabase = await createAdminClient()
@@ -34,9 +14,9 @@ export default async function InventarioPage() {
   ])
 
   const summary = (summaryData as InventoryRow[] | null) ?? []
-  const shades = (shadeData as ShadeRow[] | null) ?? []
+  const shades = (shadeData as ShadeDetail[] | null) ?? []
 
-  const shadesByProduct = shades.reduce<Record<string, ShadeRow[]>>((acc, shade) => {
+  const shadesByProduct = shades.reduce<Record<string, ShadeDetail[]>>((acc, shade) => {
     if (!acc[shade.product_id]) acc[shade.product_id] = []
     acc[shade.product_id].push(shade)
     return acc

@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { X, Trash2, Minus, Plus, ShoppingBag, Lock } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCartStore, type CartItem } from '@/lib/store/cart'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 interface CartDrawerProps {
   open: boolean
@@ -19,19 +19,6 @@ interface CartItemRowProps {
   item: CartItem
   onRemove: (shadeId: string) => void
   onUpdate: (shadeId: string, qty: number) => void
-}
-
-// Detecta si el viewport es mobile para elegir la animación correcta
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)')
-    setIsMobile(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-  return isMobile
 }
 
 function CartItemRow({ item, onRemove, onUpdate }: CartItemRowProps) {

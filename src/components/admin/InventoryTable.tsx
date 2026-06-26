@@ -3,27 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { ChevronDown, ChevronRight } from 'lucide-react'
-
-interface ShadeDetail {
-  id: string
-  name: string
-  hex_color: string
-  stock: number
-  is_active: boolean
-}
-
-export interface InventoryRowData {
-  product_id: string
-  product_name: string
-  category_name: string | null
-  status: 'draft' | 'active' | 'inactive'
-  total_shades: number
-  total_stock: number
-  out_of_stock_shades: number
-  low_stock_shades: number
-  min_shade_stock: number
-  shades: ShadeDetail[]
-}
+import type { ShadeDetail, InventoryRowData } from '@/types/inventory'
 
 interface Props {
   rows: InventoryRowData[]

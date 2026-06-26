@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { buildCatalogoUrl } from '@/lib/catalogo'
 
 interface CatalogoPaginationProps {
   currentPage: number
@@ -18,18 +19,9 @@ export function CatalogoPagination({
 }: CatalogoPaginationProps) {
   const router = useRouter()
 
-  function buildUrl(page: number) {
-    const params = new URLSearchParams()
-    if (categoria)   params.set('categoria', categoria)
-    if (orden)       params.set('orden', orden)
-    if (page > 1)    params.set('pagina', String(page))
-    const qs = params.toString()
-    return `/catalogo${qs ? `?${qs}` : ''}`
-  }
-
   function goToPage(page: number) {
     document.getElementById('catalogo-top')?.scrollIntoView({ behavior: 'smooth' })
-    router.push(buildUrl(page))
+    router.push(buildCatalogoUrl({ categoria, orden, pagina: page }))
   }
 
   // Mostrar máx. 5 páginas alrededor de la actual

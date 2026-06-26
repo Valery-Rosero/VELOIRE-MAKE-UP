@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { ChevronRight } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { ProductDetail, ProductShade } from '@/types/product'
+import { calculateDiscountPct } from '@/lib/format'
 import { ShadeSelector } from './ShadeSelector'
 import { ProductActions } from './ProductActions'
 import { ProductDescription } from './ProductDescription'
@@ -46,10 +47,7 @@ export function ProductClient({ product }: ProductClientProps) {
     firstInStock?.image_url ?? sortedImages[0]?.url ?? null
   )
 
-  const discountPct =
-    product.compare_price && product.compare_price > product.price
-      ? Math.round((1 - product.price / product.compare_price) * 100)
-      : null
+  const discountPct = calculateDiscountPct(product.price, product.compare_price)
 
   const mainImage = sortedImages[0]
 
