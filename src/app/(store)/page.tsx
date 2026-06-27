@@ -368,7 +368,7 @@ export default async function HomePage() {
       <HeroSection products={newProducts} />
       <CategoriesSection categories={categories} />
       <FeaturedSection products={featuredProducts} />
-      <ShadeWall shades={shadeWallItems} />
+
       <ValueBanner />
     </>
   )

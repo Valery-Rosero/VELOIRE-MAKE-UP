@@ -2,7 +2,7 @@ import Link from 'next/link'
 import {
   ShoppingBag, Clock, TrendingUp, Package, ArrowRight,
   AlertTriangle, Users, BarChart2, Target, XCircle,
-  Repeat2, ShoppingCart, CalendarDays,
+  Repeat2, ShoppingCart, CalendarDays, Wallet, Percent, Tag,
 } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/server'
 import { formatPrice, formatDate } from '@/lib/format'
@@ -109,7 +109,7 @@ export default async function AdminDashboardPage() {
 
   const allOrders = (orders60d as RawOrder[] | null) ?? []
 
-  // ── Round 2: order items for paid orders last 30 days ────────────────────────
+  // ── Round 2: order items + product meta for paid orders last 30 days ────────
 
   const paidIds30d = allOrders
     .filter(o => PAID.includes(o.status) && new Date(o.created_at) >= ago30)
@@ -120,6 +120,19 @@ export default async function AdminDashboardPage() {
         .select('product_id, product_name, shade_id, shade_name, shade_hex, quantity, subtotal')
         .in('order_id', paidIds30d)).data ?? []
     : []
+
+  // Metadata de productos vendidos — brand y cost_price para análisis financiero
+  const soldProductIds = [...new Set(items.map(i => i.product_id).filter(Boolean))] as string[]
+  const productMeta: Map<string, { brand: string | null; cost_price: number | null }> = new Map()
+  if (soldProductIds.length > 0) {
+    const { data: metaRows } = await supabase
+      .from('products')
+      .select('id, brand, cost_price')
+      .in('id', soldProductIds)
+    ;(metaRows ?? []).forEach(p => {
+      productMeta.set(p.id, { brand: p.brand ?? null, cost_price: p.cost_price ?? null })
+    })
+  }
 
   // ── Compute metrics ───────────────────────────────────────────────────────────
 
@@ -242,6 +255,33 @@ export default async function AdminDashboardPage() {
   const recurringCount = [...emailCount.values()].filter(n => n > 1).length
   const newCount = [...emailCount.values()].filter(n => n === 1).length
 
+  // ── Análisis financiero: inversión, ganancia, margen ─────────────────────────
+
+  let totalInvestment = 0
+  let revenueWithCost = 0
+  const brandRevenueMap = new Map<string, number>()
+
+  items.forEach(item => {
+    const meta = item.product_id ? productMeta.get(item.product_id) : null
+    if (meta?.cost_price) {
+      totalInvestment += meta.cost_price * item.quantity
+      revenueWithCost += item.subtotal
+    }
+    const brand = meta?.brand?.trim() || 'Sin marca'
+    brandRevenueMap.set(brand, (brandRevenueMap.get(brand) ?? 0) + item.subtotal)
+  })
+
+  const revenueFor30d = items.reduce((s, i) => s + i.subtotal, 0)
+  const grossProfit = revenueWithCost - totalInvestment
+  const marginPct = revenueWithCost > 0 ? (grossProfit / revenueWithCost) * 100 : null
+  const hasCostData = totalInvestment > 0
+
+  const topBrands = [...brandRevenueMap.entries()]
+    .filter(([name]) => name !== 'Sin marca')
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([label, value]) => ({ label, value, formattedValue: formatPrice(value) }))
+
   // Products without sales in last 30 days
   const soldIds = new Set(items.map(i => i.product_id).filter(Boolean))
   const noSalesProducts = ((activeProds as Array<{ id: string; name: string }> | null) ?? [])
@@ -363,6 +403,66 @@ export default async function AdminDashboardPage() {
         />
       </div>
 
+      {/* ── Fila 3: Inversión · Ganancia · Margen ── */}
+      {hasCostData ? (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="bg-card border border-rim rounded-2xl p-5 hover:border-rim-2 transition-colors">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-xl bg-warning/10 flex items-center justify-center">
+                <Wallet size={15} className="text-warning" strokeWidth={1.5} />
+              </div>
+              <p className="font-body text-[11px] text-fg-3">Inversión (30 días)</p>
+            </div>
+            <p className="font-display text-2xl text-fg leading-none">{formatPrice(totalInvestment)}</p>
+            <p className="font-body text-[10px] text-fg-3 mt-1.5 italic">
+              Costo total de lo vendido
+            </p>
+          </div>
+
+          <div className="bg-card border border-rim rounded-2xl p-5 hover:border-rim-2 transition-colors">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-xl bg-success/10 flex items-center justify-center">
+                <TrendingUp size={15} className="text-success" strokeWidth={1.5} />
+              </div>
+              <p className="font-body text-[11px] text-fg-3">Ganancia bruta (30 días)</p>
+            </div>
+            <p className={`font-display text-2xl leading-none ${grossProfit >= 0 ? 'text-success' : 'text-error'}`}>
+              {formatPrice(grossProfit)}
+            </p>
+            <p className="font-body text-[10px] text-fg-3 mt-1.5 italic">
+              Ingresos − inversión · {formatPrice(revenueWithCost)} facturado
+            </p>
+          </div>
+
+          <div className="bg-card border border-rim rounded-2xl p-5 hover:border-rim-2 transition-colors">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-xl bg-accent/10 flex items-center justify-center">
+                <Percent size={15} className="text-accent" strokeWidth={1.5} />
+              </div>
+              <p className="font-body text-[11px] text-fg-3">Margen de ganancia</p>
+            </div>
+            <p className={`font-display text-2xl leading-none ${(marginPct ?? 0) >= 0 ? 'text-accent' : 'text-error'}`}>
+              {marginPct !== null ? `${marginPct.toFixed(1)}%` : '—'}
+            </p>
+            <p className="font-body text-[10px] text-fg-3 mt-1.5 italic">
+              Solo productos con costo registrado
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-card border border-rim rounded-2xl p-5 flex items-center gap-4">
+          <div className="w-9 h-9 rounded-xl bg-alt flex items-center justify-center shrink-0">
+            <Wallet size={16} className="text-fg-3" strokeWidth={1.5} />
+          </div>
+          <div>
+            <p className="font-body text-sm font-medium text-fg">Análisis financiero no disponible</p>
+            <p className="font-body text-xs text-fg-3 mt-0.5">
+              Registra el precio de costo en los productos para ver inversión, ganancia y margen.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ── Gráfica de ingresos ── */}
       <div className="bg-card border border-rim rounded-2xl p-5">
         <div className="flex items-center gap-2 mb-5">
@@ -432,6 +532,42 @@ export default async function AdminDashboardPage() {
           <HorizontalBars items={topShades} emptyMessage="Sin ventas registradas" />
         </div>
       </div>
+
+      {/* ── Top marcas ── */}
+      {topBrands.length > 0 && (
+        <div className="bg-card border border-rim rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-px h-4 bg-accent" />
+            <Tag size={13} className="text-fg-3" strokeWidth={1.5} />
+            <h2 className="font-body text-sm font-medium text-fg">Marcas más vendidas (30 días)</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1">
+            {topBrands.map((brand, i) => {
+              const max = topBrands[0].value
+              const pct = max > 0 ? (brand.value / max) * 100 : 0
+              return (
+                <div key={brand.label} className="py-2 border-b border-rim last:border-0 sm:last:border-0">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-body text-[10px] text-fg-3 tabular-nums w-4 shrink-0">{i + 1}</span>
+                      <span className="font-body text-sm text-fg truncate">{brand.label}</span>
+                    </div>
+                    <span className="font-body text-xs font-medium text-gold shrink-0 ml-3 tabular-nums">
+                      {brand.formattedValue}
+                    </span>
+                  </div>
+                  <div className="ml-6 h-1 rounded-full bg-alt overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-accent transition-all duration-500"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ── Clientes + sin ventas ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

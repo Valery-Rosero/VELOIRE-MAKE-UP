@@ -113,8 +113,8 @@ export function HeroSection({ products = [] }: HeroSectionProps) {
   const hasProducts = products.length > 0
 
   return (
-    <section className="relative min-h-[calc(100vh-66px)] md:min-h-[calc(100vh-123px)] flex items-center overflow-hidden bg-alt">
-      {/* Círculo grande decorativo — CSS puro, sin gradiente */}
+    <section className="relative overflow-hidden bg-alt h-[calc(100svh-64px)] md:h-[calc(100vh-123px)] flex items-center">
+      {/* Círculo grande decorativo */}
       <div
         className="absolute pointer-events-none rounded-full"
         style={{
@@ -140,17 +140,80 @@ export function HeroSection({ products = [] }: HeroSectionProps) {
         }}
       />
 
-      <div className="relative max-w-7xl mx-auto px-4 py-16 md:py-20 w-full">
-        <div className="grid grid-cols-1 md:grid-cols-[55%_45%] gap-10 items-center">
+      <div className="relative max-w-7xl mx-auto px-4 w-full py-5 md:py-10">
+        {/* ── Mobile: imagen arriba, texto abajo ── */}
+        <div className="flex flex-col gap-8 md:hidden">
 
-          {/* ── Columna izquierda ── */}
+          {/* Imagen primero en mobile */}
           <motion.div
-            className="flex flex-col items-center md:items-start text-center md:text-left"
+            className="relative w-full overflow-hidden rounded-2xl"
+            style={{ height: '62vw', minHeight: 220, maxHeight: 340 }}
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+          >
+            {hasProducts ? (
+              <ProductSpotlight products={products} />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-highlight rounded-2xl">
+                <span className="font-display text-7xl text-accent select-none">V</span>
+              </div>
+            )}
+          </motion.div>
+
+          {/* Texto */}
+          <motion.div
+            className="flex flex-col items-start text-left"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
+          >
+            <p
+              className="font-body uppercase text-accent mb-3"
+              style={{ fontSize: '10px', letterSpacing: '3px' }}
+            >
+              Nueva colección · Pasto, Nariño
+            </p>
+
+            <h1 className="font-display leading-[1.08] tracking-tight text-[52px] text-fg mb-3">
+              El maquillaje<br />que te hace<br />
+              sentir{' '}
+              <em className="text-accent" style={{ fontStyle: 'italic' }}>tú</em>
+            </h1>
+
+            <p className="font-body text-[14px] text-fg-2 leading-[1.7] mb-6 max-w-xs">
+              Encuentra tu tono perfecto entre nuestra colección artesanal.
+              Hecho para todas.
+            </p>
+
+            <div className="flex items-center gap-4 w-full">
+              <Link
+                href="/catalogo"
+                className="group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity flex-1"
+              >
+                Ver colección
+                <ArrowRight size={13} className="transition-transform duration-150 group-hover:translate-x-0.5" />
+              </Link>
+              <Link
+                href="/catalogo?orden=nuevo"
+                className="inline-flex items-center justify-center py-3 text-sm font-body font-medium text-accent hover:text-fg transition-colors duration-150 shrink-0"
+              >
+                Novedades
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* ── Desktop: layout original 55/45 ── */}
+        <div className="hidden md:grid grid-cols-[55%_45%] gap-10 items-center">
+
+          {/* Columna izquierda */}
+          <motion.div
+            className="flex flex-col items-start text-left"
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, ease: 'easeOut' }}
           >
-            {/* Eyebrow */}
             <p
               className="font-body uppercase text-accent mb-5"
               style={{ fontSize: '10px', letterSpacing: '3px' }}
@@ -158,49 +221,42 @@ export function HeroSection({ products = [] }: HeroSectionProps) {
               Nueva colección · Pasto, Nariño
             </p>
 
-            {/* Título */}
             <h1 className="font-display leading-[1.08] tracking-tight mb-0">
-              <span className="block text-[32px] md:text-5xl lg:text-[58px] text-fg">El maquillaje</span>
-              <span className="block text-[32px] md:text-5xl lg:text-[58px] text-fg">que te hace</span>
-              <span className="block text-[32px] md:text-5xl lg:text-[58px] text-fg">
+              <span className="block text-[64px] text-fg">El maquillaje</span>
+              <span className="block text-[64px] text-fg">que te hace</span>
+              <span className="block text-[64px] text-fg">
                 sentir{' '}
                 <em className="text-accent" style={{ fontStyle: 'italic' }}>tú</em>
               </span>
             </h1>
 
-            {/* Separador */}
-            <div
-              className="mt-5 mb-5 bg-rose-medium hidden md:block"
-              style={{ width: '40px', height: '2px' }}
-            />
+            <div className="mt-5 mb-5 bg-rose-medium" style={{ width: '40px', height: '2px' }} />
 
-            {/* Subtítulo */}
             <p className="font-body text-[15px] text-fg-2 max-w-sm leading-[1.7] mb-8">
               Encuentra tu tono perfecto entre nuestra colección artesanal.
               Hecho para todas.
             </p>
 
-            {/* Botones */}
-            <div className="flex flex-col w-full md:w-auto md:flex-row md:items-center gap-3">
+            <div className="flex flex-row items-center gap-3">
               <Link
                 href="/catalogo"
-                className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity w-full md:w-auto"
+                className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-noir text-beige text-sm font-body font-medium hover:opacity-90 transition-opacity"
               >
                 Ver colección
                 <ArrowRight size={14} className="transition-transform duration-150 group-hover:translate-x-0.5" />
               </Link>
               <Link
                 href="/catalogo?orden=nuevo"
-                className="inline-flex items-center justify-center py-3.5 text-sm font-body font-medium text-accent hover:text-fg transition-colors duration-150 w-full md:w-auto"
+                className="inline-flex items-center justify-center py-3.5 text-sm font-body font-medium text-accent hover:text-fg transition-colors duration-150"
               >
                 Novedades
               </Link>
             </div>
           </motion.div>
 
-          {/* ── Columna derecha ── */}
+          {/* Columna derecha */}
           <motion.div
-            className="relative h-72 md:h-130 overflow-hidden"
+            className="relative h-130 overflow-hidden"
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7, ease: 'easeOut', delay: 0.15 }}
@@ -208,7 +264,6 @@ export function HeroSection({ products = [] }: HeroSectionProps) {
             {hasProducts ? (
               <ProductSpotlight products={products} />
             ) : (
-              /* Círculos flotantes — ocultos en pantallas muy pequeñas */
               <div className="hidden min-[480px]:block absolute inset-0">
                 {CIRCLES.map((c, i) => (
                   <motion.div
@@ -224,18 +279,12 @@ export function HeroSection({ products = [] }: HeroSectionProps) {
                       boxShadow: '0 8px 32px rgba(0,0,0,0.13)',
                     }}
                     animate={{ y: [0, -c.float, 0] }}
-                    transition={{
-                      duration: c.dur,
-                      repeat: Infinity,
-                      delay: c.delay,
-                      ease: 'easeInOut',
-                    }}
+                    transition={{ duration: c.dur, repeat: Infinity, delay: c.delay, ease: 'easeInOut' }}
                   />
                 ))}
               </div>
             )}
           </motion.div>
-
         </div>
       </div>
     </section>

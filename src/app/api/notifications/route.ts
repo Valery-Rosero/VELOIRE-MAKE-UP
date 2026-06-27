@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
 import type { NotificationType } from '@/types/database'
 
 const VALID_TYPES: NotificationType[] = [
@@ -10,6 +10,25 @@ const VALID_TYPES: NotificationType[] = [
 ]
 
 export async function POST(request: NextRequest) {
+  const authClient = await createClient()
+  const { data: { user } } = await authClient.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: 'No autorizado.' }, { status: 401 })
+  }
+
+  const supabase = await createAdminClient()
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') {
+    return NextResponse.json({ error: 'Prohibido.' }, { status: 403 })
+  }
+
   const body = await request.json().catch(() => ({}))
   const { orderId, type } = body as { orderId?: string; type?: string }
 
@@ -20,8 +39,6 @@ export async function POST(request: NextRequest) {
   if (!VALID_TYPES.includes(type as NotificationType)) {
     return NextResponse.json({ error: 'Tipo de notificación inválido.' }, { status: 400 })
   }
-
-  const supabase = await createAdminClient()
 
   const { data: orderRows } = await supabase
     .from('orders')

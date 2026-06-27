@@ -44,8 +44,6 @@ export function ProductGrid({ products, filterKey }: ProductGridProps) {
           const mainImage = p.product_images?.find((img) => img.is_main) ?? p.product_images?.[0]
           const activeShades = p.product_shades?.filter((s) => s.is_active) ?? []
           const totalStock = activeShades.reduce((sum, s) => sum + (s.stock ?? 0), 0)
-          // En móvil siempre variante A; en desktop alternar A/B
-          const variant = i % 2 === 1 ? 'b' : 'a'
           return (
             <ProductCard
               key={p.id}
@@ -59,7 +57,6 @@ export function ProductGrid({ products, filterKey }: ProductGridProps) {
               shadeCount={activeShades.length}
               totalStock={totalStock}
               index={i}
-              variant={variant}
             />
           )
         })}

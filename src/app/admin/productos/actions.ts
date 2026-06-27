@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth-guard'
 
 interface ShadeInput {
   id?: string
@@ -39,6 +40,7 @@ export interface SaveProductInput {
 }
 
 export async function saveProduct(data: SaveProductInput): Promise<{ error?: string }> {
+  await requireAdmin()
   const supabase = await createAdminClient()
 
   const productFields = {
@@ -131,6 +133,7 @@ export async function saveProduct(data: SaveProductInput): Promise<{ error?: str
 }
 
 export async function deleteProduct(productId: string): Promise<{ error?: string }> {
+  await requireAdmin()
   const supabase = await createAdminClient()
 
   // Check for active (non-terminal) orders that include this product
@@ -165,6 +168,7 @@ export async function toggleProductStatus(
   productId: string,
   currentStatus: 'draft' | 'active' | 'inactive'
 ) {
+  await requireAdmin()
   const supabase = await createAdminClient()
   const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
   await supabase.from('products').update({ status: newStatus }).eq('id', productId)

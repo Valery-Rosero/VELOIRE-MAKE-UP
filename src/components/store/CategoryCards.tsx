@@ -50,37 +50,34 @@ export function CategoryCards({ categories }: { categories: Category[] }) {
           <motion.div
             key={cat.id}
             className="shrink-0 snap-start"
-            whileHover={{ scale: 1.04, y: -3 }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
+            whileHover={{ scale: 1.03, y: -2 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
           >
             <Link
               href={`/catalogo?categoria=${cat.slug}`}
-              className="flex flex-col items-center justify-end w-32.5 h-42.5 rounded-2xl relative overflow-hidden"
+              className="flex flex-col justify-between w-28 h-40 rounded-2xl p-4 relative overflow-hidden group"
               style={{ backgroundColor: style.bg }}
             >
-              {/* Círculo decorativo de fondo */}
-              <div
-                className="absolute top-4 left-1/2 -translate-x-1/2 w-16 h-16 rounded-full"
-                style={{ backgroundColor: style.accent }}
+              {/* Ícono pequeño arriba */}
+              <Icon
+                size={20}
+                strokeWidth={1.4}
+                style={{ color: style.text, opacity: 0.75 }}
               />
-              {/* Ícono centrado */}
-              <div
-                className="absolute top-4 left-1/2 -translate-x-1/2 w-16 h-16 flex items-center justify-center"
-              >
-                <Icon size={28} style={{ color: style.text, opacity: 0.92 }} strokeWidth={1.5} />
-              </div>
-              {/* Círculo pequeño decorativo */}
-              <div
-                className="absolute top-14 right-3 w-4 h-4 rounded-full"
-                style={{ backgroundColor: style.accent }}
-              />
-              {/* Nombre */}
-              <div className="relative z-10 px-3 pb-5 pt-2 text-center">
+
+              {/* Nombre + indicador */}
+              <div>
                 <p
-                  className="font-display text-[16px] leading-tight"
+                  className="font-display text-[17px] leading-snug"
                   style={{ color: style.text }}
                 >
                   {cat.name}
+                </p>
+                <p
+                  className="font-body text-[10px] mt-1 tracking-wide uppercase"
+                  style={{ color: style.text, opacity: 0.5 }}
+                >
+                  Ver →
                 </p>
               </div>
             </Link>

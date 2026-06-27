@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth-guard'
 import type { WizardProduct } from '@/lib/store/supplier-order'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -32,6 +33,7 @@ export interface BulkProductResult {
 export async function createProductsInBulk(
   products: WizardProduct[]
 ): Promise<{ results: BulkProductResult[] }> {
+  await requireAdmin()
   const supabase = await createAdminClient()
 
   // Fetch all existing slugs once for collision detection
@@ -64,6 +66,9 @@ export async function createProductsInBulk(
           description: product.descripcion || null,
           category_id: product.categoryId,
           price,
+          cost_price: product.costoUnitario > 0 ? product.costoUnitario : null,
+          brand: product.marca || null,
+          no_color_variation: product.noColorVariation,
           status: product.publishStatus,
           is_featured: product.isFeatured,
         })
@@ -83,6 +88,7 @@ export async function createProductsInBulk(
           product.shades.map((s, i) => ({
             product_id: productId,
             name: s.name.trim() || s.excelRef,
+            excel_ref: s.excelRef || null,
             hex_color: s.hexColor || '#C8C8C8',
             image_url: s.imageUrl || null,
             stock: s.stock,

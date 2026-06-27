@@ -22,9 +22,9 @@ export interface Database {
         Relationships: []
       }
       products: {
-        Row: { id: string; category_id: string; name: string; slug: string; description: string | null; price: number; compare_price: number | null; status: ProductStatus; is_featured: boolean; meta_title: string | null; meta_description: string | null; created_at: string; updated_at: string }
-        Insert: { category_id: string; name: string; slug: string; price: number; description?: string | null; compare_price?: number | null; status?: ProductStatus; is_featured?: boolean; meta_title?: string | null; meta_description?: string | null }
-        Update: { category_id?: string; name?: string; slug?: string; price?: number; description?: string | null; compare_price?: number | null; status?: ProductStatus; is_featured?: boolean; meta_title?: string | null; meta_description?: string | null }
+        Row: { id: string; category_id: string; name: string; slug: string; description: string | null; price: number; compare_price: number | null; cost_price: number | null; brand: string | null; no_color_variation: boolean; status: ProductStatus; is_featured: boolean; meta_title: string | null; meta_description: string | null; created_at: string; updated_at: string }
+        Insert: { category_id: string; name: string; slug: string; price: number; description?: string | null; compare_price?: number | null; cost_price?: number | null; brand?: string | null; no_color_variation?: boolean; status?: ProductStatus; is_featured?: boolean; meta_title?: string | null; meta_description?: string | null }
+        Update: { category_id?: string; name?: string; slug?: string; price?: number; description?: string | null; compare_price?: number | null; cost_price?: number | null; brand?: string | null; no_color_variation?: boolean; status?: ProductStatus; is_featured?: boolean; meta_title?: string | null; meta_description?: string | null }
         Relationships: []
       }
       product_images: {
@@ -34,9 +34,9 @@ export interface Database {
         Relationships: []
       }
       product_shades: {
-        Row: { id: string; product_id: string; name: string; hex_color: string; image_url: string | null; stock: number; is_active: boolean; sort_order: number; created_at: string; updated_at: string }
-        Insert: { id?: string; product_id: string; name: string; hex_color: string; image_url?: string | null; stock?: number; is_active?: boolean; sort_order?: number }
-        Update: { name?: string; hex_color?: string; image_url?: string | null; stock?: number; is_active?: boolean; sort_order?: number }
+        Row: { id: string; product_id: string; name: string; hex_color: string; excel_ref: string | null; image_url: string | null; stock: number; is_active: boolean; sort_order: number; created_at: string; updated_at: string }
+        Insert: { id?: string; product_id: string; name: string; hex_color: string; excel_ref?: string | null; image_url?: string | null; stock?: number; is_active?: boolean; sort_order?: number }
+        Update: { name?: string; hex_color?: string; excel_ref?: string | null; image_url?: string | null; stock?: number; is_active?: boolean; sort_order?: number }
         Relationships: []
       }
       orders: {

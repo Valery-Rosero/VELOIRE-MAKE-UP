@@ -45,32 +45,34 @@ export function CatalogoFilters({ categories, activeCategory, activeOrder }: Cat
   }
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-      {/* Pills de categoría */}
-      <div className="flex gap-2 overflow-x-auto pb-0.5 flex-1 scrollbar-none">
-        <button
-          onClick={() => setCategory(null)}
-          className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-body font-medium transition-colors duration-150 ${
-            !activeCategory
-              ? 'bg-noir text-beige'
-              : 'bg-highlight text-fg-2 hover:bg-noir hover:text-beige'
-          }`}
-        >
-          Todos
-        </button>
-        {categories.map((cat) => (
+    <div className="flex items-center gap-3">
+      {/* Pills de categoría — scroll horizontal en móvil */}
+      <div className="flex-1 min-w-0 overflow-x-auto scrollbar-none">
+        <div className="flex gap-2 pb-0.5 w-max">
           <button
-            key={cat.id}
-            onClick={() => setCategory(cat.slug)}
+            onClick={() => setCategory(null)}
             className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-body font-medium transition-colors duration-150 ${
-              activeCategory === cat.slug
+              !activeCategory
                 ? 'bg-noir text-beige'
                 : 'bg-highlight text-fg-2 hover:bg-noir hover:text-beige'
             }`}
           >
-            {cat.name}
+            Todos
           </button>
-        ))}
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setCategory(cat.slug)}
+              className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-body font-medium transition-colors duration-150 ${
+                activeCategory === cat.slug
+                  ? 'bg-noir text-beige'
+                  : 'bg-highlight text-fg-2 hover:bg-noir hover:text-beige'
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Sort dropdown */}
@@ -79,7 +81,8 @@ export function CatalogoFilters({ categories, activeCategory, activeOrder }: Cat
           onClick={() => setDropdownOpen((v) => !v)}
           className="flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-body font-medium bg-card border border-rim text-fg-2 hover:border-rim-2 transition-colors whitespace-nowrap"
         >
-          <span>{activeSortLabel}</span>
+          <span className="hidden sm:inline">{activeSortLabel}</span>
+          <span className="sm:hidden">Ordenar</span>
           <ChevronDown
             size={14}
             className={`transition-transform duration-150 ${dropdownOpen ? 'rotate-180' : ''}`}

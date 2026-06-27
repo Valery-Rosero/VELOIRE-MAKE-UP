@@ -25,6 +25,20 @@ export async function PATCH(
 
   const { data: { user } } = await authClient.auth.getUser()
 
+  if (!user) {
+    return NextResponse.json({ error: 'No autorizado.' }, { status: 401 })
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') {
+    return NextResponse.json({ error: 'Prohibido.' }, { status: 403 })
+  }
+
   const updateData: { status: OrderStatus; payment_confirmed_at?: string; payment_confirmed_by?: string } = { status }
   if (status === 'paid') {
     updateData.payment_confirmed_at = new Date().toISOString()

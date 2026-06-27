@@ -58,7 +58,14 @@ export async function proxy(request: NextRequest) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
-    const { data: profileRows } = await supabase
+    // Usa service role para leer el perfil — la anon key queda bloqueada por RLS
+    // si no hay política SELECT explícita en la tabla profiles.
+    const adminSupabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { cookies: { getAll: () => [], setAll: () => {} } }
+    )
+    const { data: profileRows } = await adminSupabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)

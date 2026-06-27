@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth-guard'
 import type { OrderStatus } from '@/types/database'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -41,6 +42,7 @@ async function restoreOrderStock(orderId: string) {
 // ── Actions ───────────────────────────────────────────────────────────────────
 
 export async function updateOrderStatus(orderId: string, status: OrderStatus) {
+  await requireAdmin()
   if (status === 'cancelled') {
     await restoreOrderStock(orderId)
   }
@@ -52,6 +54,7 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
 }
 
 export async function cancelOrder(orderId: string): Promise<{ success: true } | { error: string }> {
+  await requireAdmin()
   await restoreOrderStock(orderId)
 
   const supabase = await createAdminClient()
@@ -69,6 +72,7 @@ export async function cancelOrder(orderId: string): Promise<{ success: true } | 
 }
 
 export async function deleteOrder(orderId: string): Promise<{ success: true } | { error: string }> {
+  await requireAdmin()
   const supabase = await createAdminClient()
 
   const { data: order } = await supabase

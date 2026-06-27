@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { checkoutSchema } from '@/lib/validations/checkout'
+import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 import type { CartItem } from '@/lib/store/cart'
 
 interface OrderBody extends Record<string, unknown> {
@@ -8,6 +9,14 @@ interface OrderBody extends Record<string, unknown> {
 }
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request.headers)
+  if (isRateLimited(ip, 5, 60_000)) {
+    return NextResponse.json(
+      { error: 'Demasiadas solicitudes. Espera un momento antes de intentarlo de nuevo.' },
+      { status: 429 }
+    )
+  }
+
   try {
     const body: OrderBody = await request.json()
     const { items, ...formData } = body
