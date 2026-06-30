@@ -7,6 +7,7 @@ import { useTheme } from '@/components/ui/ThemeProvider'
 import { ShoppingBag, Search, User, Sun, Moon, Menu, X } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
 import { motion, AnimatePresence } from 'framer-motion'
+import { SearchOverlay } from '@/components/store/SearchOverlay'
 
 const NAV_LINKS = [
   { label: 'Catálogo',       href: '/catalogo' },
@@ -72,6 +73,7 @@ function Logo({ size = 'md', onClick }: { size?: 'sm' | 'md' | 'lg'; onClick?: (
 export function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const pathname = usePathname()
   const itemCount = useCartStore((s) => s.items.reduce((n, i) => n + i.quantity, 0))
   const openDrawer = useCartStore((s) => s.openDrawer)
@@ -117,6 +119,7 @@ export function Header() {
 
   return (
     <>
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
       <header
         className={`sticky top-0 z-40 transition-all duration-300 border-b ${
           scrolled
@@ -187,7 +190,7 @@ export function Header() {
 
             {/* Íconos derecha */}
             <div className="ml-auto flex items-center gap-1">
-              <button aria-label="Buscar" className={iconClass}>
+              <button aria-label="Buscar" className={iconClass} onClick={() => setSearchOpen(true)}>
                 <Search size={15} strokeWidth={1.5} />
               </button>
               <Link href="/cuenta" aria-label="Mi cuenta" className={iconClass}>

@@ -10,7 +10,7 @@ import type { Category, CatalogoProduct } from '@/types/catalog'
 const PAGE_SIZE = 20
 
 interface PageProps {
-  searchParams: Promise<{ categoria?: string; orden?: string; pagina?: string }>
+  searchParams: Promise<{ categoria?: string; orden?: string; pagina?: string; q?: string }>
 }
 
 // ─── Fetchers ─────────────────────────────────────────────────────────────────
@@ -33,6 +33,7 @@ async function getProducts(
   categoria?: string,
   orden?: string,
   page = 1,
+  q?: string,
 ): Promise<{ products: CatalogoProduct[]; total: number }> {
   try {
     const supabase = await createClient()
@@ -63,6 +64,10 @@ async function getProducts(
       .range(from, to)
 
     if (categoryId) query = query.eq('category_id', categoryId)
+
+    if (q?.trim()) {
+      query = query.or(`name.ilike.%${q.trim()}%,brand.ilike.%${q.trim()}%,description.ilike.%${q.trim()}%`)
+    }
 
     switch (orden) {
       case 'precio-asc':  query = query.order('price', { ascending: true });  break
@@ -108,12 +113,12 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function CatalogoPage({ searchParams }: PageProps) {
-  const { categoria, orden, pagina } = await searchParams
+  const { categoria, orden, pagina, q } = await searchParams
   const page = Math.max(1, parseInt(pagina ?? '1', 10) || 1)
 
   const [categories, { products, total }] = await Promise.all([
     getCategories(),
-    getProducts(categoria, orden, page),
+    getProducts(categoria, orden, page, q),
   ])
 
   const activeCategory = categories.find((c) => c.slug === categoria) ?? null
@@ -124,16 +129,16 @@ export default async function CatalogoPage({ searchParams }: PageProps) {
       {/* Encabezado */}
       <div id="catalogo-top" className="mb-6">
         <h1 className="font-display text-3xl md:text-4xl text-fg">
-          {activeCategory ? activeCategory.name : 'Colección completa'}
+          {q ? `Resultados para "${q}"` : activeCategory ? activeCategory.name : 'Colección completa'}
         </h1>
-        {activeCategory?.description && (
+        {!q && activeCategory?.description && (
           <p className="font-body text-sm text-fg-2 mt-1 max-w-xl">
             {activeCategory.description}
           </p>
         )}
         <p className="font-body text-sm text-fg-3 mt-1">
           {total} {total === 1 ? 'producto' : 'productos'}
-          {activeCategory ? ` en ${activeCategory.name}` : ''}
+          {q ? ` encontrados` : activeCategory ? ` en ${activeCategory.name}` : ''}
         </p>
       </div>
 
